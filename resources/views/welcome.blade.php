@@ -41,7 +41,8 @@
                 <div class="title">Laravel 5</div>
                 <?php
                     use Abraham\TwitterOAuth\TwitterOAuth;
-                    $CONSUMER_KEY = "JLbyO2CtUynqtNHJnhrNZ6PZl";
+                    /* the keys should not be visible - we can fix this at a later stage */
+                    $CONSUMER_KEY = "JLbyO2CtUynqtNHJnhrNZ6PZl"; 
                     $CONSUMER_SECRET = "i2OwurNBeCVbh6kw7tgysmOaDKt3RB8HYnmwRRtwDCCudzsjNV";
                     $access_token = "894781214451617792-angr8pULQrjcKFLmu42U739Uv0hTpd3";
                     $access_token_secret = "WC8v9XS5jJU2CV1yXYhEN21N6iUlHVamClR40HoF75Dsf";
