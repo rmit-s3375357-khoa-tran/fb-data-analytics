@@ -3,6 +3,8 @@
 <head>
     <title>Big Social Data Analytics</title>
 
+    <link rel="icon" type="image/png" href="{{ asset('images/round-blue-bigdata.png') }}">
+
     <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
 
     <style>

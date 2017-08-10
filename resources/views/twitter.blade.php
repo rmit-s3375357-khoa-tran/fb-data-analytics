@@ -2,14 +2,14 @@
 
 @section('content')
     <div class="content">
-        <h2>Results for <em>{{ $keyword }}</em></h2>
+        <div class="title">Results for <em>{{ $keyword }}</em></div>
         <table class="table-striped table-responsive">
             <thead>
             <tr>
                 <td></td>
-                <td>Time</td>
-                <td>Language</td>
-                <td>Tweet</td>
+                <td><h2>Time</h2></td>
+                <td><h2>Language</h2></td>
+                <td><h2>Tweet</h2></td>
             </tr>
             </thead>
             <tbody>
