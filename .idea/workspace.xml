@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="23a9d400-0d00-4da7-a516-8fd60ebcf80e" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/composer.phar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/bsda.iml" afterPath="$PROJECT_DIR$/.idea/bsda.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/composer.lock" afterPath="$PROJECT_DIR$/composer.lock" />
-    </list>
+    <list default="true" id="23a9d400-0d00-4da7-a516-8fd60ebcf80e" name="Default" comment="" />
     <ignored path=".idea/dataSources.local.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -259,12 +254,20 @@
       <workItem from="1502379741848" duration="499000" />
       <workItem from="1502426033902" duration="1568000" />
       <workItem from="1502454369817" duration="597000" />
-      <workItem from="1502974854206" duration="122000" />
+      <workItem from="1502974854206" duration="178000" />
     </task>
+    <task id="LOCAL-00001" summary="composter add">
+      <created>1502974990308</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1502974990308</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8916000" />
+    <option name="totallyTimeSpent" value="8972000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-10" y="0" width="1924" height="1030" extended-state="0" />
@@ -331,6 +334,10 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="composter add" />
+    <option name="LAST_COMMIT_MESSAGE" value="composter add" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
