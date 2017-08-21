@@ -44,23 +44,22 @@ class TwitterApiController extends Controller
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
 
-        return view('twitter', compact('keyword', 'results'));
+        return view('twitter', compact('keyword', 'results', 'sentiments'));
     }
 
     private function sentimentAnalysis($results)
     {
         $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
 
-        $body_message = "{ documents : [";
+        $body_message = '{ "documents" : [';
         foreach ($results as $index=>$result)
         {
             $message = $result->text;
+            $message = str_replace('"', "'", $message);
             $id = $index +1;
-            $body_message .= "{ 
-                               language: en, 
-                               id: ". $id .", 
-                               text: ".$message.
-                            "}, ";
+            $body_message .= '{ "language": "en", 
+                                "id": '.$id.',
+                                "text": "'.$message.'"},';
         }
         $body_message .= "]}";
         $client = new Client(); //GuzzleHttp\Client
@@ -70,6 +69,7 @@ class TwitterApiController extends Controller
                 'content-type' => 'application/json',
                 'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
             ],
+
             'body' => $body_message
         ]);
 
@@ -79,8 +79,7 @@ class TwitterApiController extends Controller
             $return_result = $res->getBody();
         }
 
-        dd($return_result);
 
-        return $sentiment_counter;
+        return $return_result;
     }
 }

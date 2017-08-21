@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="content">
+        {{ $sentiments }}
         <div class="title">Results for <em>{{ $keyword }}</em></div>
         <table class="table-striped table-responsive">
             <thead>
