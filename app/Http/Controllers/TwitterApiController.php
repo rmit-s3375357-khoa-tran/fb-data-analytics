@@ -7,6 +7,9 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Client;
+
 class TwitterApiController extends Controller
 {
     private $twitter;
@@ -37,6 +40,47 @@ class TwitterApiController extends Controller
         $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
         $results = $statuses->statuses;
 
+
+        /*****Analysing sentiments******/
+        $sentiments = $this->sentimentAnalysis($results);
+
         return view('twitter', compact('keyword', 'results'));
+    }
+
+    private function sentimentAnalysis($results)
+    {
+        $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
+
+        $body_message = "{ documents : [";
+        foreach ($results as $index=>$result)
+        {
+            $message = $result->text;
+            $id = $index +1;
+            $body_message .= "{ 
+                               language: en, 
+                               id: ". $id .", 
+                               text: ".$message.
+                            "}, ";
+        }
+        $body_message .= "]}";
+        $client = new Client(); //GuzzleHttp\Client
+
+        $res = $client->request('POST', 'https://westus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
+            'headers' => [
+                'content-type' => 'application/json',
+                'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
+            ],
+            'body' => $body_message
+        ]);
+
+        $return_result = "";
+        if  ($res->getStatusCode() == 200)
+        {
+            $return_result = $res->getBody();
+        }
+
+        dd($return_result);
+
+        return $sentiment_counter;
     }
 }
