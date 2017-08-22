@@ -2,7 +2,9 @@
 
 @section('content')
     <div class="content">
-        {{ $sentiments }}
+        <p>Positive tweets {{ $sentiments['positive'] }}</p>
+        <p>Negative tweets {{ $sentiments['negative']  }}</p>
+        <p>>Neutral tweets {{ $sentiments['neutral']  }}</p>
         <div class="title">Results for <em>{{ $keyword }}</em></div>
         <table class="table-striped table-responsive">
             <thead>

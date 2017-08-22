@@ -49,8 +49,7 @@ class TwitterApiController extends Controller
 
     private function sentimentAnalysis($results)
     {
-        $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
-
+        /* Converting messages into json body for request*/
         $body_message = '{ "documents" : [';
         foreach ($results as $index=>$result)
         {
@@ -62,24 +61,53 @@ class TwitterApiController extends Controller
                                 "text": "'.$message.'"},';
         }
         $body_message .= "]}";
-        $client = new Client(); //GuzzleHttp\Client
 
+        /*Creating a request*/
+        $client = new Client(); //GuzzleHttp\Client
         $res = $client->request('POST', 'https://westus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
             'headers' => [
                 'content-type' => 'application/json',
                 'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
             ],
-
             'body' => $body_message
         ]);
 
-        $return_result = "";
+        /*Response returned*/
+        $json = "";
         if  ($res->getStatusCode() == 200)
         {
-            $return_result = $res->getBody();
+            $json = $res->getBody();
         }
 
+        /* Parsing results and incrementing a sentiment counter*/
+        $results = json_decode($json,true);
+        $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
 
-        return $return_result;
+        foreach ($results['documents'] as $result){
+            $score =  $result['score'];
+
+            if ($score < 0.5)
+            {
+                $sentiment_counter['negative']++;
+            }
+            elseif ($score > 0.5)
+            {
+                $sentiment_counter['positive']++;
+            }
+            else
+            {
+                $sentiment_counter['neutral']++;
+            }
+            //echo $result['score']."<br>";
+        }
+
+        //echo $sentiment_counter['positive']."<br>";
+        //echo $sentiment_counter['negative']."<br>";
+        //echo $sentiment_counter['neutral'];
+
+
+        //return $return_result;
+
+        return $sentiment_counter;
     }
 }
