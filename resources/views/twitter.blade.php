@@ -22,8 +22,8 @@
                 },
                 xAxis: {
                     categories: [
-                        'Twitter',
-                        'Facebook',
+                        'Twitter with AZURE API',
+                        'Twitter with Datumbox API',
                         'Youtube'
                     ],
                     crosshair: true
@@ -50,15 +50,15 @@
                 },
                 series: [{
                     name: 'Positive',
-                    data: [{{ $sentiments['positive'] }}, 0, 0]
+                    data: [{{ $sentiments['positive'] }}, {{ $tweetSentiments['positive'] }}, 0]
 
                 }, {
                     name: 'Negative',
-                    data: [{{ $sentiments['negative']  }}, 0, 0]
+                    data: [{{ $sentiments['negative']  }}, {{ $tweetSentiments['negative']  }}, 0]
 
                 }, {
                     name: 'Neutral',
-                    data: [{{ $sentiments['neutral']  }}, 0, 0]
+                    data: [{{ $sentiments['neutral']  }}, {{ $tweetSentiments['neutral']  }}, 0]
 
                 }]
             });

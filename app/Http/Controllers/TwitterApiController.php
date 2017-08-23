@@ -40,15 +40,53 @@ class TwitterApiController extends Controller
         $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
         $results = $statuses->statuses;
 
-
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
+        $tweetSentiments = $this->tweetSentimentAnalysis($results);
 
-        return view('twitter', compact('keyword', 'results', 'sentiments'));
+        return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments'));
+    }
+
+
+    private function tweetSentimentAnalysis($results)
+    {
+        require_once('DatumboxAPI.php');
+
+        $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API'));
+        $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
+
+        $analysis = array();
+
+        echo "<br> DATUMBOX <br>";
+        foreach ($results as $index=>$result)
+        {
+            $analysis[$index + 1] = $DatumboxAPI->SentimentAnalysis($result->text);
+            $value = $analysis[$index + 1];
+
+            echo "id: ".($index + 1)." value: ".$value."<br>";
+
+            if ($value=="negative")
+            {
+                $sentiment_counter['negative']++;
+            }
+            elseif ($value=="positive")
+            {
+                $sentiment_counter['positive']++;
+            }
+            else
+            {
+                $sentiment_counter['neutral']++;
+            }
+
+        }
+
+        return $sentiment_counter;
+
     }
 
     private function sentimentAnalysis($results)
     {
+
         /* Converting messages into json body for request*/
         $body_message = '{ "documents" : [';
         foreach ($results as $index=>$result)
@@ -83,20 +121,25 @@ class TwitterApiController extends Controller
         $results = json_decode($json,true);
         $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
 
+        echo "AZURE"."<br>";
         foreach ($results['documents'] as $result){
             $score =  $result['score'];
+            $id = $result['id'];
 
             if ($score < 0.5)
             {
                 $sentiment_counter['negative']++;
+                echo "id: ".($id)." value: negative<br>";
             }
             elseif ($score > 0.5)
             {
                 $sentiment_counter['positive']++;
+                echo "id: ".($id)." value: positive<br>";
             }
             else
             {
                 $sentiment_counter['neutral']++;
+                echo "id: ".($id)." value: neutral<br>";
             }
             //echo $result['score']."<br>";
         }
