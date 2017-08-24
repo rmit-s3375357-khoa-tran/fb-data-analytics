@@ -60,7 +60,9 @@ class TwitterApiController extends Controller
         echo "<br> DATUMBOX <br>";
         foreach ($results as $index=>$result)
         {
-            $analysis[$index + 1] = $DatumboxAPI->SentimentAnalysis($result->text);
+            $message = $result->text;
+            //$message = str_replace('@', "", $message);
+            $analysis[$index + 1] = $DatumboxAPI->TwitterSentimentAnalysis($message);
             $value = $analysis[$index + 1];
 
             echo "id: ".($index + 1)." value: ".$value."<br>";
