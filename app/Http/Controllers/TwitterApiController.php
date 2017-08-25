@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
-require_once('DatumboxAPI.php');
 
 class TwitterApiController extends Controller
 {
@@ -54,13 +53,16 @@ class TwitterApiController extends Controller
 // ##### DatumboxAPI sentiment analysis #####
     private function analyseTweet($results)
     {
+        require_once('DatumboxAPI.php');
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $location = array();
 
         echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
-            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result->text));
+            $message = $result->text;
+            $message = str_replace('@', "", $message);
+            $message = $DatumboxAPI->TwitterSentimentAnalysis($message);
 
             echo "id: " . ($index + 1) . " value: " . $message . "<br>";
 
