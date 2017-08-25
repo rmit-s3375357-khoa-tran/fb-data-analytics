@@ -54,17 +54,14 @@ class TwitterApiController extends Controller
     private function analyseTweet($results)
     {
         require_once('DatumboxAPI.php');
-        $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API'));
+        $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $location = array();
 
-        echo "<br> DATUMBOX <br>";
+        //echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
-            $message = $result->text;
-            $message = str_replace('@', "", $message);
-            $message = $DatumboxAPI->TwitterSentimentAnalysis($message);
-
-            echo "id: " . ($index + 1) . " value: " . $message . "<br>";
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "",$result->text));
+            //echo "id: " . ($index + 1) . " value: " . $message . "<br>";
 
             if ($message == "negative") {
                 $sentiment_counter['negative']++;
@@ -75,10 +72,7 @@ class TwitterApiController extends Controller
             }
 
 
-
             // Get lat and long by address
-            //print_r($result->user->time_zone);
-            //echo"<br>";
             if (array_key_exists("time_zone",$result->user))
             {
                 $address = $result->user->time_zone; // Google HQ
@@ -134,20 +128,20 @@ class TwitterApiController extends Controller
         $results = json_decode($json, true);
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
 
-        echo "AZURE" . "<br>";
+        //echo "AZURE" . "<br>";
         foreach ($results['documents'] as $result) {
             $score = $result['score'];
             $id = $result['id'];
 
             if ($score < 0.5) {
                 $sentiment_counter['negative']++;
-                echo "id: " . ($id) . " value: negative<br>";
+                //echo "id: " . ($id) . " value: negative<br>";
             } elseif ($score > 0.5) {
                 $sentiment_counter['positive']++;
-                echo "id: " . ($id) . " value: positive<br>";
+                //echo "id: " . ($id) . " value: positive<br>";
             } else {
                 $sentiment_counter['neutral']++;
-                echo "id: " . ($id) . " value: neutral<br>";
+                //echo "id: " . ($id) . " value: neutral<br>";
             }
         }
 
