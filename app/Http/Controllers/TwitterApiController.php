@@ -14,6 +14,9 @@ class TwitterApiController extends Controller
 {
     private $twitter;
 
+    //API URL
+    const API_URL ='http://maps.googleapis.com/maps/api/geocode/json';
+
     /**
      * TwitterApiController constructor.
      *
@@ -42,43 +45,43 @@ class TwitterApiController extends Controller
 
         //print_r($results);
 
+
+        $coordinate["lon"] = -37.804663448;
+        $coordinate["lat"] = 144.957996168;
+        echo 'Address = ' . $coordinate . '<br/>';
+
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
         $tweetSentiments = $this->tweetSentimentAnalysis($results);
 
-        return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments'));
+        return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinate'));
     }
 
 
+// ##### DatumboxAPI sentiment analysis #####
     private function tweetSentimentAnalysis($results)
     {
         require_once('DatumboxAPI.php');
 
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API'));
-        $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
+        $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
 
         $analysis = array();
 
         echo "<br> DATUMBOX <br>";
-        foreach ($results as $index=>$result)
-        {
+        foreach ($results as $index => $result) {
             $message = $result->text;
             $message = str_replace('@', "", $message);
             $analysis[$index + 1] = $DatumboxAPI->TwitterSentimentAnalysis($message);
             $value = $analysis[$index + 1];
 
-            echo "id: ".($index + 1)." value: ".$value."<br>";
+            echo "id: " . ($index + 1) . " value: " . $value . "<br>";
 
-            if ($value=="negative")
-            {
+            if ($value == "negative") {
                 $sentiment_counter['negative']++;
-            }
-            elseif ($value=="positive")
-            {
+            } elseif ($value == "positive") {
                 $sentiment_counter['positive']++;
-            }
-            else
-            {
+            } else {
                 $sentiment_counter['neutral']++;
             }
 
@@ -88,19 +91,19 @@ class TwitterApiController extends Controller
 
     }
 
+// ##### AzureAPI sentiment analysis #####
     private function sentimentAnalysis($results)
     {
 
         /* Converting messages into json body for request*/
         $body_message = '{ "documents" : [';
-        foreach ($results as $index=>$result)
-        {
+        foreach ($results as $index => $result) {
             $message = $result->text;
             $message = str_replace('"', "'", $message);
-            $id = $index +1;
+            $id = $index + 1;
             $body_message .= '{ "language": "en", 
-                                "id": '.$id.',
-                                "text": "'.$message.'"},';
+                                "id": ' . $id . ',
+                                "text": "' . $message . '"},';
         }
         $body_message .= "]}";
 
@@ -116,34 +119,28 @@ class TwitterApiController extends Controller
 
         /*Response returned*/
         $json = "";
-        if  ($res->getStatusCode() == 200)
-        {
+        if ($res->getStatusCode() == 200) {
             $json = $res->getBody();
         }
 
         /* Parsing results and incrementing a sentiment counter*/
-        $results = json_decode($json,true);
-        $sentiment_counter = array("positive"=>0, "negative"=>0, "neutral"=>0);
+        $results = json_decode($json, true);
+        $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
 
-        echo "AZURE"."<br>";
-        foreach ($results['documents'] as $result){
-            $score =  $result['score'];
+        echo "AZURE" . "<br>";
+        foreach ($results['documents'] as $result) {
+            $score = $result['score'];
             $id = $result['id'];
 
-            if ($score < 0.5)
-            {
+            if ($score < 0.5) {
                 $sentiment_counter['negative']++;
-                echo "id: ".($id)." value: negative<br>";
-            }
-            elseif ($score > 0.5)
-            {
+                echo "id: " . ($id) . " value: negative<br>";
+            } elseif ($score > 0.5) {
                 $sentiment_counter['positive']++;
-                echo "id: ".($id)." value: positive<br>";
-            }
-            else
-            {
+                echo "id: " . ($id) . " value: positive<br>";
+            } else {
                 $sentiment_counter['neutral']++;
-                echo "id: ".($id)." value: neutral<br>";
+                echo "id: " . ($id) . " value: neutral<br>";
             }
             //echo $result['score']."<br>";
         }
@@ -157,4 +154,9 @@ class TwitterApiController extends Controller
 
         return $sentiment_counter;
     }
+
+
+
+
 }
+class GeolocationException extends \Exception {}
