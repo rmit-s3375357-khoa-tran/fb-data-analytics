@@ -36,7 +36,7 @@ class TwitterApiController extends Controller
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
         $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
         $results = $statuses->statuses;
-
+        
         return view('twitter', compact('keyword', 'results'));
     }
 }
