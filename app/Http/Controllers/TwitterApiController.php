@@ -9,14 +9,12 @@ use Illuminate\Http\Request;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
+require_once('DatumboxAPI.php');
 
 class TwitterApiController extends Controller
 {
+
     private $twitter;
-
-    //API URL
-    const API_URL ='http://maps.googleapis.com/maps/api/geocode/json';
-
     /**
      * TwitterApiController constructor.
      *
@@ -45,49 +43,56 @@ class TwitterApiController extends Controller
 
         //print_r($results);
 
-
-        $coordinate["lon"] = -37.804663448;
-        $coordinate["lat"] = 144.957996168;
-        echo 'Address = ' . $coordinate . '<br/>';
-
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
-        $tweetSentiments = $this->tweetSentimentAnalysis($results);
+        list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
 
-        return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinate'));
+        return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
     }
 
 
 // ##### DatumboxAPI sentiment analysis #####
-    private function tweetSentimentAnalysis($results)
+    private function analyseTweet($results)
     {
-        require_once('DatumboxAPI.php');
-
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-
-        $analysis = array();
+        $location = array();
 
         echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
-            $message = $result->text;
-            $message = str_replace('@', "", $message);
-            $analysis[$index + 1] = $DatumboxAPI->TwitterSentimentAnalysis($message);
-            $value = $analysis[$index + 1];
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result->text));
 
-            echo "id: " . ($index + 1) . " value: " . $value . "<br>";
+            echo "id: " . ($index + 1) . " value: " . $message . "<br>";
 
-            if ($value == "negative") {
+            if ($message == "negative") {
                 $sentiment_counter['negative']++;
-            } elseif ($value == "positive") {
+            } elseif ($message == "positive") {
                 $sentiment_counter['positive']++;
             } else {
                 $sentiment_counter['neutral']++;
             }
 
+
+
+            // Get lat and long by address
+            //print_r($result->user->time_zone);
+            //echo"<br>";
+            if (array_key_exists("time_zone",$result->user))
+            {
+                $address = $result->user->time_zone; // Google HQ
+                if ($address != null){
+                    $prepAddr = str_replace(' ','+',$address);
+                    $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
+                    $output= json_decode($geocode);
+                    $latitude = $output->results[0]->geometry->location->lat;
+                    $longitude = $output->results[0]->geometry->location->lng;
+                    array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
+                }
+
+            }
         }
 
-        return $sentiment_counter;
+        return [$sentiment_counter, $location];
 
     }
 
@@ -142,15 +147,7 @@ class TwitterApiController extends Controller
                 $sentiment_counter['neutral']++;
                 echo "id: " . ($id) . " value: neutral<br>";
             }
-            //echo $result['score']."<br>";
         }
-
-        //echo $sentiment_counter['positive']."<br>";
-        //echo $sentiment_counter['negative']."<br>";
-        //echo $sentiment_counter['neutral'];
-
-
-        //return $return_result;
 
         return $sentiment_counter;
     }
@@ -159,4 +156,3 @@ class TwitterApiController extends Controller
 
 
 }
-class GeolocationException extends \Exception {}
