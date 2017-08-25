@@ -40,6 +40,8 @@ class TwitterApiController extends Controller
         $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
         $results = $statuses->statuses;
 
+        //print_r($results);
+
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
         $tweetSentiments = $this->tweetSentimentAnalysis($results);
@@ -61,7 +63,7 @@ class TwitterApiController extends Controller
         foreach ($results as $index=>$result)
         {
             $message = $result->text;
-            //$message = str_replace('@', "", $message);
+            $message = str_replace('@', "", $message);
             $analysis[$index + 1] = $DatumboxAPI->TwitterSentimentAnalysis($message);
             $value = $analysis[$index + 1];
 
