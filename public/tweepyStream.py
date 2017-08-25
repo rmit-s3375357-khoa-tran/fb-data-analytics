@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #Import the necessary methods from tweepy library
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
@@ -6,7 +7,7 @@ import configparser
 import sys
 
 #Variables that contains the user credentials to access Twitter API 
-keyword = sys.argv[1]
+keyword = sys.argv[1] or "No Keyword"
 config = configparser.ConfigParser()
 config.read("config.ini")
 access_token = config.get('TwitterOAuth', 'TWITTEROAUTH_ACCESS_TOKEN')
@@ -20,11 +21,12 @@ class StdOutListener(StreamListener):
     
     def __init__(self):
         self.tweetCount = 0
+        self.totalTweets = int(sys.argv[2]) or 1000
 
     def on_data(self, data):
         #Cancel after so many tweets --> This can be user defined
         self.tweetCount = self.tweetCount + 1
-        if self.tweetCount > 1000:
+        if self.tweetCount > self.totalTweets:
             return False
         print (data)
         return True

@@ -6,6 +6,8 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 
 use App\Http\Requests;
 use Illuminate\Http\Request;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class TwitterApiController extends Controller
 {
@@ -36,7 +38,9 @@ class TwitterApiController extends Controller
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
         $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
         $results = $statuses->statuses;
-        
+        $process = new Process('python3 tweepyStream.py Tom');
+        $process->run();
+        dd($process->getOutput());
         return view('twitter', compact('keyword', 'results'));
     }
 }
