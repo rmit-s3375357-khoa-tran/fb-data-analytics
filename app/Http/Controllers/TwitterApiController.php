@@ -36,7 +36,7 @@ class TwitterApiController extends Controller
         ];
 
         fputcsv($fp, $header);
-        
+
         foreach ($results as $result)
         {
             $fields = $this->prepareFieldsForCsv($result);

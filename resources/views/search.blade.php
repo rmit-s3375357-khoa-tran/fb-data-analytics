@@ -7,6 +7,7 @@
         <form action="twitter" method="post">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <label>Keyword </label><input name="keyword">
+            <label>Stopword </label><input name="stopword">
             <input type="submit" name="submit" value="Search">
         </form>
     </div>
