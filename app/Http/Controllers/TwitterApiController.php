@@ -13,13 +13,16 @@ class TwitterApiController extends Controller
      */
     public function search(Request $request)
     {
+        // extract useful data from request
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
         $stopword = isset($request->stopword) ? $request->stopword : '';
 
+        // execute python script using process, and extract output to array
         $process = new Process('python3 tweepyStream.py '.$keyword.' 100 > twitterStream.txt');
         $process->run();
         $results = json_decode($process->getOutput(), true);
 
+        // save both raw data and processed data into csv, preprocess with stop word
         $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
         $results = $this->preprocess($results, $stopword);
         $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
