@@ -38,9 +38,9 @@ class TwitterApiController extends Controller
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
         $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
         $results = $statuses->statuses;
-        $process = new Process('python3 tweepyStream.py Tom');
+        $process = new Process('python3 tweepyStream.py '.$keyword.' 100 > twitterStream.txt');
         $process->run();
-        dd($process->getOutput());
+
         return view('twitter', compact('keyword', 'results'));
     }
 }
