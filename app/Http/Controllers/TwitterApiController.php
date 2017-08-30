@@ -15,17 +15,25 @@ class TwitterApiController extends Controller
     {
         // extract useful data from request
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
-        $stopword = isset($request->stopword) ? $request->stopword : '';
+        $count = isset($request->count) && $request->count > 0 ? $request->count : 100;
+        $stopwords = isset($request->stopwords) ? $request->stopwords : '';
+
+        // tokenise stop words into array when it's set
+        if($stopwords)
+            $stopwords = explode(',', $stopwords);
 
         // execute python script using process, and extract output to array
-        $process = new Process('python3 tweepyStream.py '.$keyword.' 100 > twitterStream.txt');
+        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
         $process->run();
         $results = json_decode($process->getOutput(), true);
 
         // save both raw data and processed data into csv, preprocess with stop word
-        $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
-        $results = $this->preprocess($results, $stopword);
-        $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+        if($results)
+        {
+            $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
+            $results = $this->preprocess($results, $stopwords);
+            $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+        }
 
         return view('twitter', compact('keyword', 'results'));
     }
@@ -65,13 +73,14 @@ class TwitterApiController extends Controller
         return $fields;
     }
 
-    private function preprocess($results, $stopword)
+    private function preprocess($results, $stopwords)
     {
         $processedData = [];
 
         foreach ($results as $result)
-            if(strpos(strtolower($result->text), strtolower($stopword)) === false)
-                $processedData[] = $result;
+            foreach ($stopwords as $stopword)
+                if(strpos(strtolower($result->text), strtolower($stopword)) === false)
+                    $processedData[] = $result;
 
         return $processedData;
     }
