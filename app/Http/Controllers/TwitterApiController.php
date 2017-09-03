@@ -23,8 +23,12 @@ class TwitterApiController extends Controller
             $stopwords = explode(',', $stopwords);
 
         // execute python script using process, and extract output to array
-//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
-//        $process->run();
+        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.json');
+        $process->run();
+
+        // execute python script using process, and extract output to array
+        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
+        $process->run();
 
         $file = file_get_contents('twitterStream.json');
         $results = [];
