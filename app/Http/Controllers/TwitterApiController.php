@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Symfony\Component\Process\Process;
-use Abraham\TwitterOAuth\TwitterOAuth;
+#use Abraham\TwitterOAuth\TwitterOAuth;
 
 class TwitterApiController extends Controller
 {
     
-    private $twitter;
+   /* private $twitter;
     /**
      * TwitterApiController constructor.
      *
      * Set up authorised connection to twitter api
-     */
+     
     public function __construct()
     {
         $this->twitter = new TwitterOAuth(
@@ -24,7 +24,7 @@ class TwitterApiController extends Controller
             config('setting.twitter_oauth.access_token_secret')
         );
         $this->twitter->get("account/verify_credentials");
-    }
+    } */
     
 /**
      * @param Request $request
