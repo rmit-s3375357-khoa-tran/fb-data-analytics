@@ -22,23 +22,34 @@ class TwitterApiController extends Controller
         if($stopwords)
             $stopwords = explode(',', $stopwords);
 
-        // execute python script using process, and extract output to array
-        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.json');
-        $process->run();
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT
+        |--------------------------------------------------------------------------
+        |
+        | Only uncomment the following if python script is running on your local,
+        | otherwise it will overwrites the test result file to empty file again.
+        |
+        */
+        // execute python script using process, and save results to json file
+//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.json');
+//        $process->run();
 
-        // execute python script using process, and extract output to array
-        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
-        $process->run();
-
+        // extract result from file
         $file = file_get_contents('twitterStream.json');
         $results = [];
 
-        $json_tweet = strtok($file, "\r\n\n");
-        while($json_tweet)
+        // save objects into array by tokenising file read
+        $tweetJson = strtok($file, "\r\n\n");
+        while($tweetJson)
         {
-            $results[] = json_decode($json_tweet);
+            // try to extract useful fields from each result and save to array if exists
+            $result = $this->extractUsefulFields(json_decode($tweetJson));
+            if($result)
+                $results[] = $result;
 
-            $json_tweet = strtok("\r\n\n");
+            // move onto next one
+            $tweetJson = strtok("\r\n\n");
         }
 
         // save both raw data and processed data into csv, preprocess with stop word
@@ -66,28 +77,27 @@ class TwitterApiController extends Controller
 
         fputcsv($fp, $header);
 
-        foreach ($results as $result)
-            if($result)
-            {
-                $fields = $this->prepareFieldsForCsv($result);
-                fputcsv($fp, $fields);
-            }
+        foreach($results as $result)
+            fputcsv($fp, $result);
 
         fclose($fp);
     }
 
-    private function prepareFieldsForCsv($result)
+    private function extractUsefulFields($result)
     {
+        $fields = null;
+
         // only extra info needed
-        $fields = [
-            'created_at'        => $result->created_at,
-            'tweet'             => $result->text,
-            'user_location'     => $result->user->location,
-            'user_timezone'     => $result->user->time_zone,
-            'geo'               => $result->geo,
-            'place_longitude'   => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][0] : null,
-            'place_latitude'    => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][1] : null,
-        ];
+        if( isset($result->created_at) )
+            $fields = [
+                'created_at'        => $result->created_at,
+                'tweet'             => $result->text,
+                'user_location'     => $result->user->location,
+                'user_timezone'     => $result->user->time_zone,
+                'geo'               => $result->geo,
+                'place_longitude'   => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][0] : null,
+                'place_latitude'    => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][1] : null,
+            ];
 
         return $fields;
     }
@@ -97,9 +107,18 @@ class TwitterApiController extends Controller
         $processedData = [];
 
         foreach ($results as $result)
+        {
+            $hasStopWord = false;
+
             foreach ($stopwords as $stopword)
-                if(strpos(strtolower($result->text), strtolower($stopword)) === false)
-                    $processedData[] = $result;
+            {
+                if(strpos(strtolower($result['tweet']), strtolower($stopword)) !== false)
+                    $hasStopWord = true;
+            }
+
+            if(! $hasStopWord )
+                $processedData[] = $result;
+        }
 
         return $processedData;
     }
