@@ -23,16 +23,30 @@ class TwitterApiController extends Controller
             $stopwords = explode(',', $stopwords);
 
         // execute python script using process, and extract output to array
-        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
-        $process->run();
-        $results = json_decode($process->getOutput(), true);
+//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
+//        $process->run();
+
+        $file = file_get_contents('twitterStream.json');
+        $results = [];
+
+        $json_tweet = strtok($file, "\r\n\n");
+        while($json_tweet)
+        {
+            $results[] = json_decode($json_tweet);
+
+            $json_tweet = strtok("\r\n\n");
+        }
 
         // save both raw data and processed data into csv, preprocess with stop word
         if($results)
         {
             $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
-            $results = $this->preprocess($results, $stopwords);
-            $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+
+            if($stopwords)
+            {
+                $results = $this->preprocess($results, $stopwords);
+                $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+            }
         }
 
         return view('twitter', compact('keyword', 'results'));
@@ -49,10 +63,11 @@ class TwitterApiController extends Controller
         fputcsv($fp, $header);
 
         foreach ($results as $result)
-        {
-            $fields = $this->prepareFieldsForCsv($result);
-            fputcsv($fp, $fields);
-        }
+            if($result)
+            {
+                $fields = $this->prepareFieldsForCsv($result);
+                fputcsv($fp, $fields);
+            }
 
         fclose($fp);
     }
@@ -84,5 +99,4 @@ class TwitterApiController extends Controller
 
         return $processedData;
     }
-
 }
