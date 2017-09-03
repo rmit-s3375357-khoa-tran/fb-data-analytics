@@ -4,25 +4,65 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Symfony\Component\Process\Process;
+use Abraham\TwitterOAuth\TwitterOAuth;
 
 class TwitterApiController extends Controller
 {
+    
+    private $twitter;
     /**
+     * TwitterApiController constructor.
+     *
+     * Set up authorised connection to twitter api
+     */
+    public function __construct()
+    {
+        $this->twitter = new TwitterOAuth(
+            config('setting.twitter_oauth.customer_key'),
+            config('setting.twitter_oauth.customer_secret'),
+            config('setting.twitter_oauth.access_token'),
+            config('setting.twitter_oauth.access_token_secret')
+        );
+        $this->twitter->get("account/verify_credentials");
+    }
+    
+/**
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function search(Request $request)
     {
+        // extract useful data from request
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
-        $stopword = isset($request->stopword) ? $request->stopword : '';
+        $count = isset($request->count) && $request->count > 0 ? $request->count : 100;
+        $stopwords = isset($request->stopwords) ? $request->stopwords : '';
 
-        $process = new Process('python3 tweepyStream.py '.$keyword.' 100 > twitterStream.txt');
-        $process->run();
-        $results = json_decode($process->getOutput(), true);
+        // tokenise stop words into array when it's set
+        if($stopwords)
+            $stopwords = explode(',', $stopwords);
 
-        $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
-        $results = $this->preprocess($results, $stopword);
-        $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+        // execute python script using process, and extract output to array
+//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
+//        $process->run();
+
+        $file = file_get_contents('twitterStream.json');
+        $results = [];
+
+        $json_tweet = strtok($file, "\r\n\n");
+        while($json_tweet)
+        {
+            $results[] = json_decode($json_tweet);
+
+            $json_tweet = strtok("\r\n\n");
+        }
+
+        // save both raw data and processed data into csv, preprocess with stop word
+        if($results)
+        {
+            $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
+            #$results = $this->preprocess($results, $stopwords);
+            $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+        }
 
         return view('twitter', compact('keyword', 'results'));
     }
@@ -36,7 +76,7 @@ class TwitterApiController extends Controller
         ];
 
         fputcsv($fp, $header);
-
+        
         foreach ($results as $result)
         {
             $fields = $this->prepareFieldsForCsv($result);

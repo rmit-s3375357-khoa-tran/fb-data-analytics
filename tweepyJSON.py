@@ -1,7 +1,7 @@
 import json
 import csv
 
-tweets_data_path = 'twitterStream.txt'
+tweets_data_path = 'public/twitterStream.json'
 
 tweets_data = []
 tweets_file = open(tweets_data_path, "r")
