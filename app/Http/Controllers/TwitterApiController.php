@@ -40,10 +40,12 @@ class TwitterApiController extends Controller
         // tokenise stop words into array when it's set
         if($stopwords)
             $stopwords = explode(',', $stopwords);
+            
+        $count = 100;    
 
         // execute python script using process, and extract output to array
-//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.txt');
-//        $process->run();
+        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.json');
+        $process->run();
 
         $file = file_get_contents('twitterStream.json');
         $results = [];
@@ -102,13 +104,14 @@ class TwitterApiController extends Controller
         return $fields;
     }
 
-    private function preprocess($results, $stopword)
+    private function preprocess($results, $stopwords)
     {
         $processedData = [];
 
         foreach ($results as $result)
-            if(strpos(strtolower($result->text), strtolower($stopword)) === false)
-                $processedData[] = $result;
+            foreach ($stopwords as $stopword)
+                if(strpos(strtolower($result->text), strtolower($stopword)) === false)
+                    $processedData[] = $result;
 
         return $processedData;
     }
