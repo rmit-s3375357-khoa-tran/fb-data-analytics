@@ -68,7 +68,7 @@ class TwitterApiController extends Controller
             }
         }
 
-        print_r($results);
+        //print_r($results);
 
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
