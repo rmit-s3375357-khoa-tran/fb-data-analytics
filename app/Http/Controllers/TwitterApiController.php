@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Abraham\TwitterOAuth\TwitterOAuth;
-
-use App\Http\Requests;
 use Illuminate\Http\Request;
+use Symfony\Component\Process\Process;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
@@ -13,34 +11,64 @@ use GuzzleHttp\Client;
 class TwitterApiController extends Controller
 {
 
-    private $twitter;
-    /**
-     * TwitterApiController constructor.
-     *
-     * Set up authorised connection to twitter api
-     */
-    public function __construct()
-    {
-        $this->twitter = new TwitterOAuth(
-            config('setting.twitter_oauth.customer_key'),
-            config('setting.twitter_oauth.customer_secret'),
-            config('setting.twitter_oauth.access_token'),
-            config('setting.twitter_oauth.access_token_secret')
-        );
-        $this->twitter->get("account/verify_credentials");
-    }
-
     /**
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function search(Request $request)
     {
+        // extract useful data from request
         $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
-        $statuses = $this->twitter->get("search/tweets", ["q" => $keyword]);
-        $results = $statuses->statuses;
+        $count = isset($request->count) && $request->count > 0 ? $request->count : 10;
+        $stopwords = isset($request->stopwords) ? $request->stopwords : '';
 
-        //print_r($results);
+        // tokenise stop words into array when it's set
+        if($stopwords)
+            $stopwords = explode(',', $stopwords);
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT
+        |--------------------------------------------------------------------------
+        |
+        | Only uncomment the following if python script is running on your local,
+        | otherwise it will overwrites the test result file to empty file again.
+        |
+        */
+        // execute python script using process, and save results to json file
+//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.json');
+//        $process->run();
+
+        // extract result from file
+        $file = file_get_contents('twitterStream.json');
+        $results = [];
+
+        // save objects into array by tokenising file read
+        $tweetJson = strtok($file, "\r\n\n");
+        while($tweetJson)
+        {
+            // try to extract useful fields from each result and save to array if exists
+            $result = $this->extractUsefulFields(json_decode($tweetJson));
+            if($result)
+                $results[] = $result;
+
+            // move onto next one
+            $tweetJson = strtok("\r\n\n");
+        }
+
+        // save both raw data and processed data into csv, preprocess with stop word
+        if($results)
+        {
+            $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
+
+            if($stopwords)
+            {
+                $results = $this->preprocess($results, $stopwords);
+                $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+            }
+        }
+
+        print_r($results);
 
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
@@ -60,7 +88,7 @@ class TwitterApiController extends Controller
 
         //echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
-            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "",$result->text));
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "",$result['tweet']));
             //echo "id: " . ($index + 1) . " value: " . $message . "<br>";
 
             if ($message == "negative") {
@@ -73,9 +101,9 @@ class TwitterApiController extends Controller
 
 
             // Get lat and long by address
-            if (array_key_exists("time_zone",$result->user))
+            if (array_key_exists("user_timezone",$result))
             {
-                $address = $result->user->time_zone; // Google HQ
+                $address = $result['user_timezone']; // Google HQ
                 if ($address != null){
                     $prepAddr = str_replace(' ','+',$address);
                     $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
@@ -91,7 +119,6 @@ class TwitterApiController extends Controller
         return [$sentiment_counter, $location];
 
     }
-
 // ##### AzureAPI sentiment analysis #####
     private function sentimentAnalysis($results)
     {
@@ -99,7 +126,7 @@ class TwitterApiController extends Controller
         /* Converting messages into json body for request*/
         $body_message = '{ "documents" : [';
         foreach ($results as $index => $result) {
-            $message = $result->text;
+            $message = $result['tweet'];
             $message = str_replace('"', "'", $message);
             $id = $index + 1;
             $body_message .= '{ "language": "en", 
@@ -113,7 +140,7 @@ class TwitterApiController extends Controller
         $res = $client->request('POST', 'https://westus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
             'headers' => [
                 'content-type' => 'application/json',
-                'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
+                'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_2')
             ],
             'body' => $body_message
         ]);
@@ -148,7 +175,59 @@ class TwitterApiController extends Controller
         return $sentiment_counter;
     }
 
+    private function saveToCsvFile($results, $filename)
+    {
+        $fp = fopen($filename, 'w');
+        // header for csv
+        $header = [
+            "created_at", "tweet", "user_location", "user_timezone", "geo", "place_coordinates"
+        ];
 
+        fputcsv($fp, $header);
 
+        foreach($results as $result)
+            fputcsv($fp, $result);
 
+        fclose($fp);
+    }
+
+    private function extractUsefulFields($result)
+    {
+        $fields = null;
+
+        // only extra info needed
+        if( isset($result->created_at) )
+            $fields = [
+                'created_at'        => $result->created_at,
+                'tweet'             => $result->text,
+                'user_location'     => $result->user->location,
+                'user_timezone'     => $result->user->time_zone,
+                'geo'               => $result->geo,
+                'place_longitude'   => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][0] : null,
+                'place_latitude'    => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][1] : null,
+            ];
+
+        return $fields;
+    }
+
+    private function preprocess($results, $stopwords)
+    {
+        $processedData = [];
+
+        foreach ($results as $result)
+        {
+            $hasStopWord = false;
+
+            foreach ($stopwords as $stopword)
+            {
+                if(strpos(strtolower($result['tweet']), strtolower($stopword)) !== false)
+                    $hasStopWord = true;
+            }
+
+            if(! $hasStopWord )
+                $processedData[] = $result;
+        }
+
+        return $processedData;
+    }
 }
