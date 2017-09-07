@@ -71,12 +71,12 @@ class TwitterApiController extends Controller
         //print_r($results);
 
         /*****Analysing sentiments******/
-        $sentiments = $this->sentimentAnalysis($results);
+        //$sentiments = $this->sentimentAnalysis($results);
         //list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
-        list($tweetSentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
+        list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
 
         //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
-        return view ('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','posCoordinates','negCoordinates','neuCoordinates'));
+        return view ('twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
     }
 
 
@@ -93,7 +93,7 @@ class TwitterApiController extends Controller
 
         //echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
-            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "",$result['tweet']));
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['tweet']));
             //echo "id: " . ($index + 1) . " value: " . $message . "<br>";
 
             if ($message == "negative") {
@@ -106,27 +106,21 @@ class TwitterApiController extends Controller
 
 
             // Get lat and long by address
-            if (array_key_exists("user_timezone",$result))
-            {
+            if (array_key_exists("user_timezone", $result)) {
                 $address = $result['user_timezone']; // Google HQ
-                if ($address != null){
-                    $prepAddr = str_replace(' ','+',$address);
-                    $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
-                    $output= json_decode($geocode);
+                if ($address != null) {
+                    $prepAddr = str_replace(' ', '+', $address);
+                    $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
+                    $output = json_decode($geocode);
                     $latitude = $output->results[0]->geometry->location->lat;
                     $longitude = $output->results[0]->geometry->location->lng;
                     //array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
-                    if ($message == "negative")
-                    {
-                        array_push($negativeLocation,array("lat"=>$latitude,"lng"=>$longitude));
-                    }
-                    elseif ($message == "positive")
-                    {
-                        array_push($positiveLocation,array("lat"=>$latitude,"lng"=>$longitude));
-                    }
-                    else
-                    {
-                        array_push($neutralLocation,array("lat"=>$latitude,"lng"=>$longitude));
+                    if ($message == "negative") {
+                        array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
+                    } elseif ($message == "positive") {
+                        array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
+                    } else {
+                        array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
                     }
                 }
             }

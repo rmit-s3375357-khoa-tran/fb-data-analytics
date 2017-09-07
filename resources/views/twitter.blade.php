@@ -3,26 +3,6 @@
 @section('content')
     <!-- Google Map API -->
     <div id ="map"></div>
-    {{--<script type="text/javascript">--}}
-        {{--initMap = function() {--}}
-
-            {{--var map = new google.maps.Map(document.getElementById('map'), {--}}
-                {{--zoom: 3,--}}
-                {{--center: {lat: -28.024, lng: 140.887}--}}
-            {{--});--}}
-
-            {{--var markers = locations.map(function(location, i) {--}}
-                {{--return new google.maps.Marker({--}}
-                    {{--position: location--}}
-                {{--});--}}
-            {{--});--}}
-
-            {{--var markerCluster = new MarkerClusterer(map, markers,--}}
-                    {{--{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});--}}
-        {{--};--}}
-        {{--var locations = JSON.parse('{!! json_encode($coordinates) !!}');--}}
-        {{--console.log(locations);--}}
-    {{--</script>--}}
 
     <script type="text/javascript">
         initMap = function() {
@@ -33,35 +13,63 @@
             });
             // Positive coordinates
 
-            var posMarkers = positive.map(function(location, i) {
+            var pos_image = {
+                url: '{{ asset('images/pins/pos_pin.png') }}',
+                // This marker is 20 pixels wide by 32 pixels high.
+                scaledSize: new google.maps.Size(30, 30)
+            };
+
+            var neg_image = {
+                url: '{{ asset('images/pins/neg_pin.png') }}',
+                // This marker is 20 pixels wide by 32 pixels high.
+                scaledSize: new google.maps.Size(30, 30)
+            };
+
+            var neu_image = {
+                url: '{{ asset('images/pins/neutral_pin.png') }}',
+                // This marker is 20 pixels wide by 32 pixels high.
+                scaledSize: new google.maps.Size(30, 30)
+            };
+
+            var pos_markers = positive.map(function(location) {
                 return new google.maps.Marker({
-                    position: location
-                });
-            });
-            var negMarkers = negative.map(function(location, i) {
-                return new google.maps.Marker({
-                    position: location
-                });
-            });
-            var neuMarkers = neutral.map(function(location, i) {
-                return new google.maps.Marker({
-                    position: location
+                    position: location,
+                    icon: pos_image
                 });
             });
 
-            var posMarkerCluster = new MarkerClusterer(map, posMarkers,
-                    {imagePath: 'C:/xampp2/htdocs/fb-data-analytics/public/images/m1.png'});
-            var negMarkerCluster = new MarkerClusterer(map, negMarkers,
-                    {imagePath: 'C:/xampp2/htdocs/fb-data-analytics/public/images/m3.png'});
-            var neuMarkerCluster = new MarkerClusterer(map, neuMarkers,
-                    {imagePath: '{{ asset('images/m2.png') }}'});
-            };
+            var neg_markers = negative.map(function(location) {
+                return new google.maps.Marker({
+                    position: location,
+                    icon: neg_image
+                });
+            });
+
+            var neu_markers = neutral.map(function(location) {
+                return new google.maps.Marker({
+                    position: location,
+                    icon: neu_image
+                });
+            });
+
+// Add a marker clusterer to manage the markers.
+            var markerCluster = new MarkerClusterer(map, pos_markers,
+                    {imagePath: '{{ asset('images/cluster/positive') }}',
+                        gridSize: 50});
+
+            var markerCluster = new MarkerClusterer(map, neg_markers,
+                    {imagePath: '{{ asset('images/cluster/negative') }}',
+                        gridSize: 50});
+
+            var markerCluster = new MarkerClusterer(map, neu_markers,
+                    {imagePath: '{{ asset('images/cluster/neutral') }}',
+                        gridSize: 50});
+        };
 
         var positive = JSON.parse('{!! json_encode($posCoordinates) !!}');
         var negative = JSON.parse('{!! json_encode($negCoordinates) !!}');
         var neutral = JSON.parse('{!! json_encode($neuCoordinates) !!}');
-        {{--var locations = JSON.parse('{!! json_encode($posCoordinates) !!},{!! json_encode($negCoordinates) !!},{!! json_encode($neuCoordinates) !!}');--}}
-//        console.log(locations);
+
     </script>
 
     <div class="content">
@@ -82,8 +90,8 @@
                 },
                 xAxis: {
                     categories: [
-                        'Twitter with AZURE API',
-                        'Twitter with Datumbox API',
+                        'Twitter',
+                        'Facebook',
                         'Youtube'
                     ],
                     crosshair: true
@@ -110,15 +118,15 @@
                 },
                 series: [{
                     name: 'Positive',
-                    data: [{{ $sentiments['positive'] }}, {{ $tweetSentiments['positive'] }}, 0]
+                    data: [{{ $sentiments['positive'] }}, 0, 0]
 
                 }, {
                     name: 'Negative',
-                    data: [{{ $sentiments['negative']  }}, {{ $tweetSentiments['negative']  }}, 0]
+                    data: [{{ $sentiments['negative']  }}, 0, 0]
 
                 }, {
                     name: 'Neutral',
-                    data: [{{ $sentiments['neutral']  }}, {{ $tweetSentiments['neutral']  }}, 0]
+                    data: [{{ $sentiments['neutral']  }}, 0, 0]
 
                 }]
             });
