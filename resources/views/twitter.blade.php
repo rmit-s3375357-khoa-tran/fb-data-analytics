@@ -3,6 +3,27 @@
 @section('content')
     <!-- Google Map API -->
     <div id ="map"></div>
+    {{--<script type="text/javascript">--}}
+        {{--initMap = function() {--}}
+
+            {{--var map = new google.maps.Map(document.getElementById('map'), {--}}
+                {{--zoom: 3,--}}
+                {{--center: {lat: -28.024, lng: 140.887}--}}
+            {{--});--}}
+
+            {{--var markers = locations.map(function(location, i) {--}}
+                {{--return new google.maps.Marker({--}}
+                    {{--position: location--}}
+                {{--});--}}
+            {{--});--}}
+
+            {{--var markerCluster = new MarkerClusterer(map, markers,--}}
+                    {{--{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});--}}
+        {{--};--}}
+        {{--var locations = JSON.parse('{!! json_encode($coordinates) !!}');--}}
+        {{--console.log(locations);--}}
+    {{--</script>--}}
+
     <script type="text/javascript">
         initMap = function() {
 
@@ -10,17 +31,33 @@
                 zoom: 3,
                 center: {lat: -28.024, lng: 140.887}
             });
+            // Positive coordinates
 
-            var markers = locations.map(function(location, i) {
+            var posMarkers = locations.map(function(location, i) {
+                return new google.maps.Marker({
+                    position: location
+                });
+            });
+            var negMarkers = locations.map(function(location, i) {
+                return new google.maps.Marker({
+                    position: location
+                });
+            });
+            var neuMarkers = locations.map(function(location, i) {
                 return new google.maps.Marker({
                     position: location
                 });
             });
 
-            var markerCluster = new MarkerClusterer(map, markers,
-                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
-        };
-        var locations = JSON.parse('{!! json_encode($coordinates) !!}');
+            var posMarkerCluster = new MarkerClusterer(map, posMarkers,
+                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m1'});
+            var negMarkerCluster = new MarkerClusterer(map, negMarkers,
+                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m2'});
+            var neuMarkerCluster = new MarkerClusterer(map, neuMarkers,
+                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m3'});
+            };
+
+        var locations = JSON.parse('{!! json_encode($posCoordinates) !!},{!! json_encode($negCoordinates) !!},{!! json_encode($neuCoordinates) !!}');
         console.log(locations);
     </script>
 

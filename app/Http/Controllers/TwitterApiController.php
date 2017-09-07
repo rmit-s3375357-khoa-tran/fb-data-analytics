@@ -72,9 +72,11 @@ class TwitterApiController extends Controller
 
         /*****Analysing sentiments******/
         $sentiments = $this->sentimentAnalysis($results);
-        list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
+        //list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
+        list($tweetSentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
 
-        return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
+        //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
+        return view ('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','posCoordinates','negCoordinates','neuCoordinates'));
     }
 
 
@@ -84,7 +86,10 @@ class TwitterApiController extends Controller
         require_once('DatumboxAPI.php');
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $location = array();
+        //$location = array();
+        $positiveLocation = array();
+        $negativeLocation = array();
+        $neutralLocation = array();
 
         //echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
@@ -103,20 +108,48 @@ class TwitterApiController extends Controller
             // Get lat and long by address
             if (array_key_exists("user_timezone",$result))
             {
-                $address = $result['user_timezone']; // Google HQ
-                if ($address != null){
-                    $prepAddr = str_replace(' ','+',$address);
-                    $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
+//                $address = $result['user_timezone']; // Google HQ
+//                if ($address != null){
+//                    $prepAddr = str_replace(' ','+',$address);
+//                    $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
+//                    $output= json_decode($geocode);
+//                    $latitude = $output->results[0]->geometry->location->lat;
+//                    $longitude = $output->results[0]->geometry->location->lng;
+//                    array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
+//                }
+                $address = $result['user_timezone'];
+                if ($address != null)
+                {
+                    $prepAddr = str_replace('','+',$address);
+                    $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
                     $output= json_decode($geocode);
-                    $latitude = $output->results[0]->geometry->location->lat;
-                    $longitude = $output->results[0]->geometry->location->lng;
-                    array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
+                    if ($message == "negative")
+                    {
+                        $negativeLatitude = $output->results[0]->geometry->NegativeLocation->lat;
+                        $negativeLongitude = $output->results[0]->geometry->NegativeLocation->lng;
+                        array_push($negativeLocation,array("lat"=>$negativeLatitude,"lng"=>$negativeLongitude));
+                    }
+                    if ($message == "positive")
+                    {
+                        $positiveLatitude = $output->results[0]->geometry->PositiveLocation->lat;
+                        $positiveLongitude = $output->results[0]->geometry->PositiveLocation->lng;
+                        array_push($positiveLocation,array("lat"=>$positiveLatitude,"lng"=>$positiveLongitude));
+                    }
+                    if ($message == "neutral")
+                    {
+                        $neutralLatitude = $output->results[0]->geometry->NeutralLocation->lat;
+                        $neutralLongtitude = $output->results[0]->geometry->NeutralLocation->lng;
+                        array_push($neutralLocation,array("lat"=>$neutralLatitude,"lng"=>$neutralLongtitude));
+                    }
+                    //array_push($NegativeLocation,$PositiveLocation,$NeutralLocation,array("lat"=>$latitude,"lng"=>$longitude))
                 }
+
+
 
             }
         }
 
-        return [$sentiment_counter, $location];
+        return [$sentiment_counter, $negativeLocation,$positiveLocation,$neutralLocation];
 
     }
 // ##### AzureAPI sentiment analysis #####
