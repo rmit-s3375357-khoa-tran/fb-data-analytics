@@ -108,44 +108,27 @@ class TwitterApiController extends Controller
             // Get lat and long by address
             if (array_key_exists("user_timezone",$result))
             {
-//                $address = $result['user_timezone']; // Google HQ
-//                if ($address != null){
-//                    $prepAddr = str_replace(' ','+',$address);
-//                    $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
-//                    $output= json_decode($geocode);
-//                    $latitude = $output->results[0]->geometry->location->lat;
-//                    $longitude = $output->results[0]->geometry->location->lng;
-//                    array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
-//                }
-                $address = $result['user_timezone'];
-                if ($address != null)
-                {
-                    $prepAddr = str_replace('','+',$address);
-                    $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
+                $address = $result['user_timezone']; // Google HQ
+                if ($address != null){
+                    $prepAddr = str_replace(' ','+',$address);
+                    $geocode=file_get_contents('https://maps.google.com/maps/api/geocode/json?address='.$prepAddr.'&sensor=false');
                     $output= json_decode($geocode);
+                    $latitude = $output->results[0]->geometry->location->lat;
+                    $longitude = $output->results[0]->geometry->location->lng;
+                    //array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
                     if ($message == "negative")
                     {
-                        $negativeLatitude = $output->results[0]->geometry->NegativeLocation->lat;
-                        $negativeLongitude = $output->results[0]->geometry->NegativeLocation->lng;
-                        array_push($negativeLocation,array("lat"=>$negativeLatitude,"lng"=>$negativeLongitude));
+                        array_push($negativeLocation,array("lat"=>$latitude,"lng"=>$longitude));
                     }
-                    if ($message == "positive")
+                    elseif ($message == "positive")
                     {
-                        $positiveLatitude = $output->results[0]->geometry->PositiveLocation->lat;
-                        $positiveLongitude = $output->results[0]->geometry->PositiveLocation->lng;
-                        array_push($positiveLocation,array("lat"=>$positiveLatitude,"lng"=>$positiveLongitude));
+                        array_push($positiveLocation,array("lat"=>$latitude,"lng"=>$longitude));
                     }
-                    if ($message == "neutral")
+                    else
                     {
-                        $neutralLatitude = $output->results[0]->geometry->NeutralLocation->lat;
-                        $neutralLongtitude = $output->results[0]->geometry->NeutralLocation->lng;
-                        array_push($neutralLocation,array("lat"=>$neutralLatitude,"lng"=>$neutralLongtitude));
+                        array_push($neutralLocation,array("lat"=>$latitude,"lng"=>$longitude));
                     }
-                    //array_push($NegativeLocation,$PositiveLocation,$NeutralLocation,array("lat"=>$latitude,"lng"=>$longitude))
                 }
-
-
-
             }
         }
 
