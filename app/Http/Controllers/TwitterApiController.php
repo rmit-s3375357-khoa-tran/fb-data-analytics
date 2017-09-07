@@ -211,7 +211,7 @@ class TwitterApiController extends Controller
     {
         $fields = null;
 
-        // only extra info needed
+        // only extra info neededz
         if( isset($result->created_at) )
             $fields = [
                 'created_at'        => $result->created_at,

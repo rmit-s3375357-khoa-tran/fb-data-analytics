@@ -33,32 +33,35 @@
             });
             // Positive coordinates
 
-            var posMarkers = locations.map(function(location, i) {
+            var posMarkers = positive.map(function(location, i) {
                 return new google.maps.Marker({
                     position: location
                 });
             });
-            var negMarkers = locations.map(function(location, i) {
+            var negMarkers = negative.map(function(location, i) {
                 return new google.maps.Marker({
                     position: location
                 });
             });
-            var neuMarkers = locations.map(function(location, i) {
+            var neuMarkers = neutral.map(function(location, i) {
                 return new google.maps.Marker({
                     position: location
                 });
             });
 
             var posMarkerCluster = new MarkerClusterer(map, posMarkers,
-                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m1'});
+                    {imagePath: 'C:/xampp2/htdocs/fb-data-analytics/public/images/m1.png'});
             var negMarkerCluster = new MarkerClusterer(map, negMarkers,
-                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m2'});
+                    {imagePath: 'C:/xampp2/htdocs/fb-data-analytics/public/images/m3.png'});
             var neuMarkerCluster = new MarkerClusterer(map, neuMarkers,
-                    {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m3'});
+                    {imagePath: '{{ asset('images/m2.png') }}'});
             };
 
-        var locations = JSON.parse('{!! json_encode($posCoordinates) !!},{!! json_encode($negCoordinates) !!},{!! json_encode($neuCoordinates) !!}');
-        console.log(locations);
+        var positive = JSON.parse('{!! json_encode($posCoordinates) !!}');
+        var negative = JSON.parse('{!! json_encode($negCoordinates) !!}');
+        var neutral = JSON.parse('{!! json_encode($neuCoordinates) !!}');
+        {{--var locations = JSON.parse('{!! json_encode($posCoordinates) !!},{!! json_encode($negCoordinates) !!},{!! json_encode($neuCoordinates) !!}');--}}
+//        console.log(locations);
     </script>
 
     <div class="content">
