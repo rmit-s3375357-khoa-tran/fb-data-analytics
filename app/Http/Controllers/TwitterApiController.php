@@ -33,8 +33,8 @@ class TwitterApiController extends ApiController
         |
         */
         // execute python script using process, and save results to json file
-//        $process = new Process('python3 tweepyStream.py '.$keyword.' '. $count .'> twitterStream.json');
-//        $process->run();
+        $process = new Process('python3 tweepy/tweepyStream.py '.$keyword.' '.$count.'> twitterStream.json');
+        $process->run();
 
         // extract result from file
         $file = file_get_contents('twitterStream.json');
