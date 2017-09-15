@@ -3,17 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Http\vendor;
 use App\Http\Requests;
 
-class YoutubeApiController extends Controller
+class YoutubeApiController extends ApiController
 {
+    public function search(Request $request)
+    {
+        $keyword = isset($request->keyword) ? $request->keyword : 'youtubeapi';
+        $results = $this->ytcomment($keyword);
+        print_r($results);
+        return view('youtube',compact('keyword','results'));
+
+    }
     private function ytcomment($videoID)
     {
         if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
             throw new \Exception('please run "composer require google/apiclient:~2.0" in "' . __DIR__ . '"');
         }
         require_once __DIR__ . '/vendor/autoload.php';
+
+
         $OAUTH2_CLIENT_ID = '543042616561-qv0ebbpuu2di5011r5nugg6ubnmfnadb.apps.googleusercontent.com';
         $OAUTH2_CLIENT_SECRET = 'cHU1wlUGgcpKFvKNOP1boC_D';
         $VIDEO_ID = $videoID;
@@ -62,21 +72,6 @@ class YoutubeApiController extends Controller
                 ));
 
                 $parentId = $videoCommentThreads[0]['id'];
-
-                // # Create a comment snippet with text.
-                // $commentSnippet = new Google_Service_YouTube_CommentSnippet();
-                // $commentSnippet->setTextOriginal($TEXT);
-                // $commentSnippet->setParentId($parentId);
-
-                // # Create a comment with snippet.
-                // $comment = new Google_Service_YouTube_Comment();
-                // $comment->setSnippet($commentSnippet);
-
-                // # Call the YouTube Data API's comments.insert method to reply to a comment.
-                // # (If the intention is to create a new top-level comment, commentThreads.insert
-                // # method should be used instead.)
-                // $commentInsertResponse = $youtube->comments->insert('snippet', $comment);
-
 
                 // Call the YouTube Data API's comments.list method to retrieve existing comment replies.
                 $videoComments = $youtube->comments->listComments('snippet', array(
