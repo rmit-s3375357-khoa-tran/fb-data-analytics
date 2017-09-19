@@ -105,6 +105,10 @@ class YoutubeApiController extends ApiController
 
                         echo("\"" . $textDisplay . "\"  by " . $author . "<br>");
                         echo("<img src=\"" . $authorPic . "\" border=0 align=left>");
+                        echo ("Commenter channel id: ".  $authorChannelId );
+
+                        // Make a new request to get the channel location
+                        echo ("Commenter channel url: ". $authorChannelUrl);
                         echo("On " . $publishedOn . " , Replies :" . $replyCount);
                         echo("<hr>");
                     }
