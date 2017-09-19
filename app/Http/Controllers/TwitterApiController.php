@@ -65,15 +65,8 @@ class TwitterApiController extends ApiController
             }
         }
 
-        //print_r($results);
-
-        /*****Analysing sentiments******/
-        //$sentiments = $this->sentimentAnalysis($results);
-        //list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
         list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates) = $this->sentimentAnalysis($results);
-        //list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
 
-        //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
         return view ('twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
     }
 
