@@ -7,7 +7,6 @@ use Symfony\Component\Process\Process;
 
 class TwitterApiController extends ApiController
 {
-
     /**
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -23,15 +22,6 @@ class TwitterApiController extends ApiController
         if($stopwords)
             $stopwords = explode(',', $stopwords);
 
-        /*
-        |--------------------------------------------------------------------------
-        | IMPORTANT
-        |--------------------------------------------------------------------------
-        |
-        | Only uncomment the following if python script is running on your local,
-        | otherwise it will overwrites the test result file to empty file again.
-        |
-        */
         // execute python script using process, and save results to json file
         $process = new Process('python3 tweepy/tweepyStream.py '.$keyword.' '.$count.'> twitterStream.json');
         $process->run();
@@ -56,12 +46,17 @@ class TwitterApiController extends ApiController
         // save both raw data and processed data into csv, preprocess with stop word
         if($results)
         {
-            $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv");
+            // header for csv
+            $header = [
+                "created_at", "tweet", "user_location", "user_timezone", "geo", "place_coordinates"
+            ];
+
+            $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv", $header);
 
             if($stopwords)
             {
                 $results = $this->preprocess($results, $stopwords);
-                $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv");
+                $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv", $header);
             }
         }
 

@@ -130,14 +130,9 @@ class ApiController extends Controller
 
     }
 
-    protected function saveToCsvFile($results, $filename)
+    protected function saveToCsvFile($results, $filename, $header)
     {
         $fp = fopen($filename, 'w');
-        // header for csv
-        $header = [
-            "created_at", "tweet", "user_location", "user_timezone", "geo", "place_coordinates"
-        ];
-
         fputcsv($fp, $header);
 
         foreach($results as $result)

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use App\Http\vendor;
-use App\Http\Requests;
 
 class YoutubeApiController extends ApiController
 {
@@ -14,76 +13,10 @@ class YoutubeApiController extends ApiController
         $results = $this->ytcomment($keyword);
         print_r($results);
         return view('youtube', compact('keyword', 'results'));
-
     }
 
-    public function ytcomment2($keyword)
+    private function ytcomment($keyword)
     {
-
-        error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED);
-        set_time_limit(60 * 3);
-
-        $g_youtubeDataAPIKey = "AIzaSyA_sxi8v-wE-ZhLVZE7jCWdNUHfWjsnMHI";
-        $videoId = "9rjnP5EVpQc";
-
-        // make api request
-        $url = "https://www.googleapis.com/youtube/v3/commentThreads?key=" . $g_youtubeDataAPIKey .
-            "&part=id,snippet,replies&videoId=" . $videoId;
-
-
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => $url,
-            CURLOPT_USERAGENT => 'YouTube API Tester',
-            CURLOPT_SSL_VERIFYPEER => 1,
-            CURLOPT_SSL_VERIFYHOST => 0,
-            CURLOPT_CAINFO => "C:/xampp/php/cacert.pem",
-            CURLOPT_CAPATH => "C:/xampp/php/cacert.pem",
-            CURLOPT_FOLLOWLOCATION => TRUE
-        ));
-        $resp = curl_exec($curl);
-
-        curl_close($curl);
-
-        if ($resp) {
-            $json = json_decode($resp);
-
-            if ($json) {
-                echo("JSON decoded<br>");
-
-                $items = $json->items;
-
-                foreach ($items as $item) {
-                    $id = $item->id;
-                    $author = $item->snippet->topLevelComment->snippet->authorDisplayName;
-                    $authorPic = $item->snippet->topLevelComment->snippet->authorProfileImageUrl;
-                    $authorChannelUrl = $item->snippet->topLevelComment->snippet->authorChannelUrl;
-                    $authorChannelId = $item->snippet->topLevelComment->snippet->authorChannelId->value;
-
-                    $textDisplay = $item->snippet->topLevelComment->snippet->textDisplay;
-                    $publishedOn = $item->snippet->topLevelComment->snippet->publishedAt;
-                    $replyCount = $item->snippet->totalReplyCount;
-
-
-                    echo("\"" . $textDisplay . "\"  by " . $author . "<br>");
-                    echo("<img src=\"" . $authorPic . "\" border=0 align=left>");
-                    echo("On " . $publishedOn . " , Replies :" . $replyCount);
-                    echo("<hr>");
-                }
-
-
-            } else
-                exit("Error. could not parse JSON." . json_last_error_msg());
-
-
-        } // if resp
-
-    }
-
-    public function ytcomment($keyword)
-    {
-        //require_once('C:\xampp\htdocs\fb-data-analytics\vendor\google\apiclient\src\Google\Client.php');
         error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED);
         set_time_limit(60 * 3);
 
@@ -96,24 +29,18 @@ class YoutubeApiController extends ApiController
         $url = "https://www.googleapis.com/youtube/v3/search?key=" . $youtubeAPIKey .
             "&part=id,snippet&q=" . $keyword . "&maxResults=" . "3" . "&type=video";
 
+        $client = new Client();
+        try {
+            $apiResponse = $client->get($url);
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => $url,
-            CURLOPT_USERAGENT => 'YouTube API Tester',
-            CURLOPT_SSL_VERIFYPEER => 1,
-            CURLOPT_SSL_VERIFYHOST=> 0,
-            CURLOPT_CAINFO => "C:/xampp/php/cacert.pem",
-            CURLOPT_CAPATH => "C:/xampp/php/cacert.pem",
-            CURLOPT_FOLLOWLOCATION => TRUE
-        ));
-        $resp = curl_exec($curl);
-
-        curl_close($curl);
-
-        if ($resp) {
+        if ($apiResponse->getStatusCode() == 200)
+        {
+            $resp = (string)$apiResponse->getBody();
             $json = json_decode($resp);
+
             if ($json) {
                 foreach ($json->items as $searchResult) {
                     array_push($videos, $searchResult->id->videoId);
@@ -128,33 +55,21 @@ class YoutubeApiController extends ApiController
             $url = "https://www.googleapis.com/youtube/v3/commentThreads?key=" . $youtubeAPIKey .
                 "&part=id,snippet,replies&videoId=" . $videoId;
 
-            echo("<hr>");
-            echo("<hr>");
+            $client = new Client();
+            try {
+                $apiResponse = $client->get($url);
+            } catch (\Exception $e) {
+                return $e->getMessage();
+            }
 
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_RETURNTRANSFER => 1,
-                CURLOPT_URL => $url,
-                CURLOPT_USERAGENT => 'YouTube API Tester',
-                CURLOPT_SSL_VERIFYPEER => 1,
-                CURLOPT_SSL_VERIFYHOST => 0,
-                CURLOPT_CAINFO => "C:/xampp/php/cacert.pem",
-                CURLOPT_CAPATH => "C:/xampp/php/cacert.pem",
-                CURLOPT_FOLLOWLOCATION => TRUE
-            ));
-            $resp = curl_exec($curl);
-
-            curl_close($curl);
-
-            if ($resp) {
+            if ($apiResponse->getStatusCode() == 200)
+            {
+                $resp = (string)$apiResponse->getBody();
                 $json = json_decode($resp);
 
-                if ($json) {
-                    echo("JSON decoded<br>");
-
-                    $items = $json->items;
-
-                    foreach ($items as $item) {
+                if ($json)
+                {
+                    foreach ($json->items as $item) {
                         $id = $item->id;
                         $author = $item->snippet->topLevelComment->snippet->authorDisplayName;
                         $authorPic = $item->snippet->topLevelComment->snippet->authorProfileImageUrl;
@@ -171,14 +86,10 @@ class YoutubeApiController extends ApiController
                         echo("On " . $publishedOn . " , Replies :" . $replyCount);
                         echo("<hr>");
                     }
-
-
-                } else
+                }
+                else
                     exit("Error. could not parse JSON." . json_last_error_msg());
-
-
-            } // if resp
+            }
         }
     }
-
 }
