@@ -1,25 +1,48 @@
 @extends('master')
 
 @section('content')
-    {{--<div class="content">--}}
-    {{--<div><img src="{{ asset('images/round-blue-bigdata.png') }}"></div>--}}
-    {{--<div class="title">Search for Tweets</div>--}}
-    {{--<form action="twitter" method="post">--}}
-    {{--<input type="hidden" name="_token" value="{{ csrf_token() }}">--}}
-    {{--<label>Keyword </label><input name="keyword" required><br>--}}
-    {{--<label>Number of Tweets </label><input name="count" type="number"><br>--}}
-    {{--<label>Stop words (Separate words by comma) </label><input name="stopwords"><br>--}}
-    {{--<input type="submit" name="submit" value="Search">--}}
-    {{--</form>--}}
-    {{--</div>--}}
-    <div class="content">
-        <div class="title">Search for Twitter</div>
-        <form action="youtube" method="post">
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            <label>Keyword </label><input name="keyword"><br>
-            <input type="submit" name="submit" value="Search">
-        </form>
+    <div class="page-header text-center">
+        <img src="{{ asset('images/logos/GrabSentiment.png') }}">
+        <div class="text-uppercase text-large">Enter Your Keyword*: <input id="keyword" type="text"></div>
+        <div>
+            <div class="text-uppercase text-large">
+                Set Your Stop Words: <input id="stop-words" type="text">
+            </div>
+            <small class="text-gray">Separate stop words by comma</small>
+        </div>
     </div>
-
-
+    <div class="container">
+        <div class="col-xs-12">
+            <div class="col-xs-4 text-center">
+                <img class="social-media-logo" src="{{ asset('images/logos/logo_twitter.png') }}">
+                <div>
+                    <br><label>Number of Tweets</label><input id="number-of-tweets" type="number">
+                    <br><small class="text-gray">By default 100</small>
+                </div>
+                <div>
+                    <br><button class="btn btn-primary btn-lg">Collect Tweets</button>
+                </div>
+            </div>
+            <div class="col-xs-4 text-center">
+                <img class="social-media-logo" src="{{ asset('images/logos/Facebook-Logo-2.png') }}">
+                <div>
+                    <br><label>Number of Pages</label><input id="number-of-facebook-pages" type="number">
+                    <br><small class="text-gray">By default 3</small>
+                </div>
+                <div>
+                    <br><button class="btn btn-primary btn-lg">Collect Comments</button>
+                </div>
+            </div>
+            <div class="col-xs-4 text-center">
+                <img class="social-media-logo" src="{{ asset('images/logos/youtube_2017_logo.png') }}">
+                <div>
+                    <br><label>Number of Videos</label><input id="number-of-youtube-videos" type="number">
+                    <br><small class="text-gray">By default 3</small>
+                </div>
+                <div>
+                    <br><button class="btn btn-primary btn-lg">Collect Comments</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
