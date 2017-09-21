@@ -7,10 +7,6 @@ use Symfony\Component\Process\Process;
 
 class TwitterApiController extends ApiController
 {
-    /**
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
     public function search(Request $request)
     {
         // extract useful data from request
@@ -60,16 +56,18 @@ class TwitterApiController extends ApiController
             }
         }
 
-        //print_r($results);
+        return asset('results/raw_data_for_'.$keyword.'.csv');
 
-        /*****Analysing sentiments******/
-        //$sentiments = $this->sentimentAnalysis($results);
-        //list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
-        list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates) = $this->sentimentAnalysis($results);
-        //list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
-
-        //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
-        return view ('twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
+//        //print_r($results);
+//
+//        /*****Analysing sentiments******/
+//        //$sentiments = $this->sentimentAnalysis($results);
+//        //list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
+//        list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates) = $this->sentimentAnalysis($results);
+//        //list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
+//
+//        //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
+//        return view ('twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
     }
 
     private function extractUsefulFields($result)

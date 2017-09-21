@@ -132,7 +132,7 @@ class ApiController extends Controller
 
     protected function saveToCsvFile($results, $filename, $header)
     {
-        $fp = fopen($filename, 'w');
+        $fp = fopen('results/'.$filename, 'w');
         fputcsv($fp, $header);
 
         foreach($results as $result)

@@ -23,7 +23,6 @@ class YoutubeApiController extends ApiController
         $youtubeAPIKey = env('YOUTUBE_API');
         $videos = array();
 
-
         /***** Getting top 3 youtube videos for keyword ****/
         /* make api request */
         $url = "https://www.googleapis.com/youtube/v3/search?key=" . $youtubeAPIKey .

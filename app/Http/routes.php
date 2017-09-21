@@ -15,5 +15,6 @@ Route::get('/', function () {
     return view('search');
 });
 
-Route::post('twitter', 'TwitterApiController@search');
-Route::post('youtube','YoutubeApiController@search');
+Route::post('twitter/api/collect', 'TwitterApiController@search');
+Route::post('youtube/api/collect','YoutubeApiController@search');
+Route::post('facebook/api/collect','FacebookApiController@search');
