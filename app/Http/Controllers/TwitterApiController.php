@@ -7,11 +7,18 @@ use Symfony\Component\Process\Process;
 
 class TwitterApiController extends ApiController
 {
-    public function search(Request $request)
+    public function collect(Request $request)
     {
+        // keyword has to be set
+        if(! isset($request->keyword))
+            return json_encode([
+                'success' => false,
+                'message' => 'Keyword is required.'
+            ]);
+
         // extract useful data from request
-        $keyword = isset($request->keyword) ? $request->keyword : 'twitterapi';
-        $count = isset($request->count) && $request->count > 0 ? $request->count : 10;
+        $keyword = $request->keyword;
+        $count = isset($request->count) && $request->count > 0 ? $request->count : 100;
         $stopwords = isset($request->stopwords) ? $request->stopwords : '';
 
         // tokenise stop words into array when it's set
@@ -19,11 +26,11 @@ class TwitterApiController extends ApiController
             $stopwords = explode(',', $stopwords);
 
         // execute python script using process, and save results to json file
-        $process = new Process('python3 tweepy/tweepyStream.py '.$keyword.' '.$count.'> twitterStream.json');
+        $process = new Process('python3 tweepy/tweepyStream.py '.$keyword.' '.$count.' > results/twitterStream.json');
         $process->run();
 
         // extract result from file
-        $file = file_get_contents('twitterStream.json');
+        $file = file_get_contents('results/twitterStream.json');
         $results = [];
 
         // save objects into array by tokenising file read
@@ -39,24 +46,37 @@ class TwitterApiController extends ApiController
             $tweetJson = strtok("\r\n\n");
         }
 
-        // save both raw data and processed data into csv, preprocess with stop word
+        // save both raw data and processed data into csv, pre-process with stop word
         if($results)
         {
             // header for csv
             $header = [
                 "created_at", "tweet", "user_location", "user_timezone", "geo", "place_coordinates"
             ];
+            $filename = "raw_data_for_".$keyword.".csv";
 
-            $this->saveToCsvFile($results, "raw_data_for_".$keyword.".csv", $header);
+            $this->saveToCsvFile($results, $filename, $header);
+            $response = [
+                'success' => true,
+                'path' => asset('results/'.$filename)
+            ];
 
             if($stopwords)
             {
                 $results = $this->preprocess($results, $stopwords);
-                $this->saveToCsvFile($results, "preprocessed_data_for_".$keyword.".csv", $header);
-            }
-        }
+                $filename = "preprocessed_data_for_".$keyword.".csv";
 
-        return asset('results/raw_data_for_'.$keyword.'.csv');
+                $this->saveToCsvFile($results, $filename, $header);
+                $response['path'] = asset('results/'.$filename);
+            }
+
+            return json_encode($response);
+        }
+        else
+            return json_encode([
+                'success' => false,
+                'message' => 'Streaming failed.'
+            ]);
 
 //        //print_r($results);
 //
@@ -67,7 +87,7 @@ class TwitterApiController extends ApiController
 //        //list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
 //
 //        //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
-//        return view ('twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
+//        return view ('pages.twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
     }
 
     private function extractUsefulFields($result)

@@ -9,10 +9,24 @@ class YoutubeApiController extends ApiController
 {
     public function search(Request $request)
     {
-        $keyword = isset($request->keyword) ? $request->keyword : 'youtubeapi';
-        $results = $this->ytcomment($keyword);
-        print_r($results);
-        return view('youtube', compact('keyword', 'results'));
+        // keyword has to be set
+        if(! isset($request->keyword))
+            return json_encode([
+                'success' => false,
+                'message' => 'Keyword is required.'
+            ]);
+
+        // extract useful data from request
+        $keyword = $request->keyword;
+        $count = isset($request->count) && $request->count > 0 ? $request->count : 3;
+
+
+
+
+//        $keyword = isset($request->keyword) ? $request->keyword : 'youtubeapi';
+//        $results = $this->ytcomment($keyword);
+//        print_r($results);
+//        return view('pages.youtube', compact('keyword', 'results'));
     }
 
     private function ytcomment($keyword)
@@ -38,10 +52,10 @@ class YoutubeApiController extends ApiController
         if ($apiResponse->getStatusCode() == 200)
         {
             $resp = (string)$apiResponse->getBody();
-            $json = json_decode($resp);
+            $results = json_decode($resp);
 
-            if ($json) {
-                foreach ($json->items as $searchResult) {
+            if ($results) {
+                foreach ($results->items as $searchResult) {
                     array_push($videos, $searchResult->id->videoId);
                 }
             }

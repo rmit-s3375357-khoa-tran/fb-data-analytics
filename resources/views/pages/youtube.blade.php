@@ -1,4 +1,4 @@
-@extends('master')
+@extends('pages.master')
 
 @section('content')
     <div class="content">

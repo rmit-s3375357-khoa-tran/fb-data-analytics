@@ -3,13 +3,26 @@
 namespace App\Http\Controllers;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Storage;
 
 class ApiController extends Controller
 {
+    /**
+     * empty results directory when
+     * 1. reset the page
+     * 2. finish analysing
+     * to prevent too many unused csv results saved in server
+     */
+    public function emptyResultsDirectory()
+    {
+        $files = Storage::files('results');
+        Storage::delete($files);
+    }
+
     // ##### DatumboxAPI sentiment analysis #####
     protected function analyseTweet($results)
     {
-        require_once('DatumboxAPI.php');
+//        require_once('DatumboxAPI.php');
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         //$location = array();
