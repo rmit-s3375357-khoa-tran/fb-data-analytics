@@ -15,7 +15,7 @@
     height: 50px;
 }
 
-a {
+button a {
     text-decoration: underline;
     color: white !important;
 }

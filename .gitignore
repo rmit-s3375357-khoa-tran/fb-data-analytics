@@ -4,3 +4,4 @@
 public/config.ini
 public/tweepy/*
 public/results
+public/*.json
