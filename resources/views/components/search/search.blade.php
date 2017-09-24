@@ -29,6 +29,7 @@
                         type="text"
                 >
             </div>
+            <small class="text-gray">By default set to a week ago</small>
         </div>
         <div class="text-right">
             <button id="reset-all" class="btn btn-default btn-lg">

@@ -24,7 +24,7 @@ $(document).ready(function()
         todayHighlight: true
     });
 
-    $("#check-all").click(function () {
+    $(".check-all").click(function () {
         $("input:checkbox").prop('checked', $(this).prop("checked"));
     });
 
@@ -74,8 +74,9 @@ $(document).ready(function()
     {
         var keyword     = $('#keyword').val(),
             stopWords   = $('#stop-words').val(),
-            numOfPages  = $('#number-of-facebook-pages').val(),
-            token       = $('#_token').val();
+            numOfVideos = $('#number-of-youtube-videos').val(),
+            token       = $('#_token').val(),
+            startingDate= $('#starting-date').val();
 
         $.ajax({
             url: 'youtube/api/search',
@@ -83,27 +84,40 @@ $(document).ready(function()
             data: {
                 'keyword'   : keyword,
                 'stopwords' : stopWords,
-                'count'     : numOfPages,
+                'count'     : numOfVideos,
+                'date'      : startingDate,
                 '_token'    : token
             },
             success: function(response)
             {
                 var res = JSON.parse(response);
 
-                for(var i=0; i<numOfPages; i++)
+                if(! res['success'])
                 {
-                    var result = res[i];
-
-                    $('#youtube-id-'+i).val(result['videoId']);
-                    $('#youtube-title-'+i).text(result['title']);
-                    $('#youtube-description-'+i).text(result['description']);
-                    $('#youtube-publish-'+i).text(result['publishedAt']);
-
-                    $('#youtube-row-'+i).show();
+                    $('#search-youtube').hide().delay(30000).fadeIn();
+                    $('#youtube-error-message').text(res['message']);
+                    $('#youtube-alert-failure').show().delay(30000).fadeOut();
                 }
+                else
+                {
+                    var results = res['data'];
+                    $('.keyword-text').text(keyword);
 
-                $('#search-component').hide();
-                $('#search-results-youtube').show();
+                    for(var i=0; i<results.length; i++)
+                    {
+                        var result = results[i];
+
+                        $('#youtube-id-'+i).val(result['videoId']);
+                        $('#youtube-title-'+i).text(result['title']);
+                        $('#youtube-description-'+i).text(result['description']);
+                        $('#youtube-publish-'+i).text(result['publishedAt']);
+
+                        $('#youtube-row-'+i).show();
+                    }
+
+                    $('#search-component').hide();
+                    $('#search-results-youtube').show();
+                }
             }
         })
     });

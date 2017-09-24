@@ -13,7 +13,7 @@
         <div class="row">
             <div class="col-xs-12">
                 <div class="col-xs-2">
-                    <label><input type="checkbox" id="check-all"/>Check all</label>
+                    <label><input type="checkbox" class="check-all"/>Check all</label>
                 </div>
                 <div class="col-xs-2 text-uppercase text-large">Page</div>
                 <div class="col-xs-8 text-center text-uppercase text-large">Description</div>

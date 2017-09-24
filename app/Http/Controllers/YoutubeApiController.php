@@ -2,15 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
 class YoutubeApiController extends ApiController
 {
+    private $apiKey;
+
+    public function __construct()
+    {
+        $this->apiKey = env('YOUTUBE_API');
+    }
+
     public function search(Request $request)
     {
         // keyword has to be set
-        if(! isset($request->keyword))
+        if( $request->keyword == "")
             return json_encode([
                 'success' => false,
                 'message' => 'Keyword is required.'
@@ -18,9 +26,66 @@ class YoutubeApiController extends ApiController
 
         // extract useful data from request
         $keyword = $request->keyword;
-        $count = isset($request->count) && $request->count > 0 ? $request->count : 3;
+        $count = ($request->count != "" && $request->count > 0) ? $request->count : 3;
 
+        // get data from api
+        $url = "https://www.googleapis.com/youtube/v3/search?" .
+            "key=" . $this->apiKey .
+            "&part=id,snippet" .
+            "&q=" . $keyword .
+            "&maxResults=" . $count*2 . // to collect twice results for filtering
+            "&type=video";
 
+        $client = new Client();
+        try {
+            $apiResponse = $client->get($url);
+        } catch (\Exception $e) {
+            return json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+
+        // in case response failed
+        if ($apiResponse->getStatusCode() != 200)
+            return json_encode([
+                'success' => false,
+                'message' => 'Response failed.'
+            ]);
+
+        // in case of empty response
+        $response = json_decode( (string)$apiResponse->getBody() );
+        if (! $response)
+            return json_encode([
+                'success' => false,
+                'message' => 'Empty response.'
+            ]);
+
+        // prepare result
+        $results = [];
+        foreach ($response->items as $item)
+        {
+            $publishedAt = Carbon::parse($item->snippet->publishedAt);
+            $startingDate = $request->date != ""?
+                Carbon::parse($request->date) :
+                Carbon::today()->subWeek();
+
+//            dd($publishedAt, $startingDate, $publishedAt >= $startingDate, isset($request->date), Carbon::today()->subWeek());
+
+            // when it's published after starting date and not reach count yet
+            if($publishedAt >= $startingDate && count($results) < $count)
+                $results[] = [
+                    'videoId'       => $item->id->videoId,
+                    'title'         => $item->snippet->title,
+                    'description'   => $item->snippet->description,
+                    'publishedAt'   => $publishedAt->toDateTimeString()
+                ];
+        }
+
+        return json_encode([
+            'success' => true,
+            'data' => $results
+        ]);
 
 
 //        $keyword = isset($request->keyword) ? $request->keyword : 'youtubeapi';

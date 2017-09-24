@@ -57,10 +57,6 @@ Route::get('test', function(){
     }
 });
 
-Route::get('test/array', function(){
-    $result = null;
-    if($result)
-        dd(true);
-    else
-        dd(false);
+Route::get('test/carbon', function(){
+    dd(\Carbon\Carbon::parse('yesterday'));
 });
