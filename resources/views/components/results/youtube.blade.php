@@ -23,13 +23,15 @@
     </div>
     <div class="container">
         <div class="row">
-            @for ($i = 0; $i < 10; $i++)
+            @for ($i = 0; $i < 13; $i++)
                 <div id="youtube-row-{{$i}}" class="col-xs-12" hidden>
                     <p>
                         <div class="col-xs-4">
                             <input
                                     id="youtube-id-{{$i}}"
                                     type="checkbox"
+                                    class="youtube-video-id"
+                                    @if($i>9) checked @endif
                             >
                             <span id="youtube-title-{{$i}}"></span>
                         </div>
@@ -42,6 +44,28 @@
                     </p>
                 </div>
             @endfor
+        </div>
+        <div id="youtube-url-group" class="row">
+            <div class="col-xs-12">
+                <span class="text-uppercase text-large">Add Your Own URLs</span>
+                <small class="text-gray">Separate URLs by comma, max 3, invalid url would be ignored</small><br>
+                <button id="add-youtube-urls" class="btn btn-primary btn-lg">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Add
+                </button>
+                <input
+                        id="youtube-custom-urls"
+                        type="text"
+                        style="width: 70%"
+                >
+            </div>
+            <div class="col-xs-12" id="youtube-add-url-failure" hidden>
+                <div class="col-xs-3"></div>
+                <div class="col-xs-4 text-center">
+                    <p class="alert alert-danger">
+                        <span id="youtube-add-url-error"></span>
+                    </p>
+                </div>
+            </div>
         </div>
         <div class="row text-center">
             <br>

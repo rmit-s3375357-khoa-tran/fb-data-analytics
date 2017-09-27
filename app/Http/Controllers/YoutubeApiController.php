@@ -29,52 +29,31 @@ class YoutubeApiController extends ApiController
         $count = ($request->count != "" && $request->count > 0) ? $request->count : 3;
 
         // get data from api
-        $url = "https://www.googleapis.com/youtube/v3/search?" .
+        $endpoint = "https://www.googleapis.com/youtube/v3/search?" .
             "key=" . $this->apiKey .
             "&part=id,snippet" .
             "&q=" . $keyword .
             "&maxResults=" . $count*2 . // to collect twice results for filtering
             "&type=video";
 
-        $client = new Client();
-        try {
-            $apiResponse = $client->get($url);
-        } catch (\Exception $e) {
-            return json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
+        // get response from api and return if failed
+        $response = $this->sendRequest($endpoint);
+        if(! $response['success'])
+            return json_encode($response);
 
-        // in case response failed
-        if ($apiResponse->getStatusCode() != 200)
-            return json_encode([
-                'success' => false,
-                'message' => 'Response failed.'
-            ]);
-
-        // in case of empty response
-        $response = json_decode( (string)$apiResponse->getBody() );
-        if (! $response)
-            return json_encode([
-                'success' => false,
-                'message' => 'Empty response.'
-            ]);
-
-        // prepare result
-        $results = [];
-        foreach ($response->items as $item)
+        // prepare result when successful response
+        $items = $response['result'];
+        $videoDetails = [];
+        foreach ($items as $item)
         {
             $publishedAt = Carbon::parse($item->snippet->publishedAt);
             $startingDate = $request->date != ""?
                 Carbon::parse($request->date) :
                 Carbon::today()->subWeek();
 
-//            dd($publishedAt, $startingDate, $publishedAt >= $startingDate, isset($request->date), Carbon::today()->subWeek());
-
             // when it's published after starting date and not reach count yet
-            if($publishedAt >= $startingDate && count($results) < $count)
-                $results[] = [
+            if($publishedAt >= $startingDate && count($videoDetails) < $count)
+                $videoDetails[] = [
                     'videoId'       => $item->id->videoId,
                     'title'         => $item->snippet->title,
                     'description'   => $item->snippet->description,
@@ -84,7 +63,7 @@ class YoutubeApiController extends ApiController
 
         return json_encode([
             'success' => true,
-            'data' => $results
+            'data' => $videoDetails
         ]);
 
 
@@ -93,6 +72,97 @@ class YoutubeApiController extends ApiController
 //        print_r($results);
 //        return view('pages.youtube', compact('keyword', 'results'));
     }
+
+    public function addCustomUrls(Request $request)
+    {
+        // return false when urls not set
+        if(! isset($request->urls) && $request->urls == "")
+            return json_encode([
+                'success' => false,
+                'message' => 'URL(s) not found.'
+            ]);
+
+        // get video info from urls
+        $items = [];
+        $urls = explode(",", $request->urls);
+        foreach($urls as $url)
+        {
+            // get the video id
+            parse_str( parse_url( $url, PHP_URL_QUERY ), $my_array_of_vars );
+            $id = $my_array_of_vars['v'];
+
+            // prepare endpoint
+            $endpoint = 'https://www.googleapis.com/youtube/v3/videos?'.
+                "key=" . $this->apiKey .
+                "&part=snippet" .
+                '&id=' . $id;
+
+            // get response from api and return if failed
+            $response = $this->sendRequest($endpoint);
+            if($response['success'] && isset($response['result'][0]))
+                array_push($items, $response['result'][0]);
+        }
+
+        // when all urls are invalid
+        if(! count($items))
+            return json_encode([
+                'success' => false,
+                'message' => 'URL(s) not found.'
+            ]);
+
+        // get response from api and add to array only when successful
+        $videoDetails = [];
+        foreach ($items as $item)
+        {
+            $publishedAt = Carbon::parse($item->snippet->publishedAt);
+            $videoDetails[] = [
+                'videoId' => $item->id,
+                'title' => $item->snippet->title,
+                'description' => $item->snippet->description,
+                'publishedAt' => $publishedAt->toDateTimeString()
+            ];
+        }
+
+        return json_encode([
+            'success'   => true,
+            'data'      => $videoDetails
+        ]);
+    }
+
+    private function sendRequest($endpoint)
+    {
+        $client = new Client();
+        try {
+            $apiResponse = $client->get($endpoint);
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        // in case response failed
+        if ($apiResponse->getStatusCode() != 200)
+            return [
+                'success' => false,
+                'message' => 'Response failed.'
+            ];
+
+        // in case of empty response
+        $response = json_decode( (string)$apiResponse->getBody() );
+        if (! $response)
+            return [
+                'success' => false,
+                'message' => 'Empty response.'
+            ];
+
+        // return all items from response
+        return [
+            'success' => true,
+            'result' => $response->items
+        ];
+    }
+
 
     private function ytcomment($keyword)
     {
