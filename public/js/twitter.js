@@ -29,6 +29,11 @@ $(document).ready(function()
                         .hide();
                     $('#twitter-download-link').attr('href', res["path"]);
                     $('#twitter-alert-success').show();
+
+                    stopWords = stopWords !== ""? stopWords : 'null';
+                    var url = 'api/analyse/' + keyword + '/' + stopWords;
+                    $('#analyse').attr('href', url);
+                    console.log(url);
                 }
                 else
                 {

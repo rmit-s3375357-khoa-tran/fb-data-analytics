@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Request;
+use ErrorException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,8 +21,98 @@ class ApiController extends Controller
         Storage::delete($files);
     }
 
+    public function analyse($keyword, $stopwords)
+    {
+        // get type depending on if stopwords were set
+        $type = ($stopwords == "null") ? 'raw' : 'processed';
+
+        // get data for all resources
+        $twitterData    = $this->getDataFromCsv($keyword, $type, 'twitter');
+        $facebookData   = $this->getDataFromCsv($keyword, $type, 'facebook');
+        $youtubeData    = $this->getDataFromCsv($keyword, $type, 'youtube');
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT NOTE
+        |--------------------------------------------------------------------------
+        |
+        | The above data might be null when it was not collected in the 1st place,
+        | so please check it before using them ( if($twitterData) will return true
+        | when it is not null).
+        |
+        | In the end, return a single result page with whatever data needed to
+        | display the page Nancy showed us the other day.
+        |
+        | OH YEAH we are almost there!!!
+        |
+        |                                               Grace
+        |
+        */
+
+        return view('pages.result', compact($results));
+    }
+
+    protected function saveToCsvFile($results, $filename, $header)
+    {
+        $fp = fopen($filename, 'w');
+        fputcsv($fp, $header);
+
+        foreach($results as $result)
+            fputcsv($fp, $result);
+
+        fclose($fp);
+    }
+
+    protected function preprocess($results, $stopwords)
+    {
+        $processedData = [];
+
+        foreach ($results as $result)
+        {
+            $hasStopWord = false;
+
+            foreach ($stopwords as $stopword)
+            {
+                if(strpos(strtolower($result['text']), strtolower($stopword)) !== false)
+                    $hasStopWord = true;
+            }
+
+            if(! $hasStopWord )
+                $processedData[] = $result;
+        }
+
+        return $processedData;
+    }
+
+    private function getDataFromCsv($keyword, $type, $source)
+    {
+        // parse the filename and open file
+        $filename = 'results/' . $source . '_' . $keyword . '_' . $type . '.csv';
+        try{
+            $file = fopen($filename, 'r');
+        } catch(ErrorException $e) {
+            return null;
+        }
+
+        // get header for field name later
+        if($result = fgetcsv($file))
+            $header = $result;
+
+        // put each line into array
+        $data = [];
+        while($result = fgetcsv($file))
+        {
+            foreach($result as $index => $value)
+                $field[$header[$index]] = $value;
+
+            $data[] = $field;
+        }
+
+        return $data;
+    }
+
     // ##### DatumboxAPI sentiment analysis #####
-    protected function analyseTweet($results)
+    private function analyseTweet($results)
     {
 //        require_once('DatumboxAPI.php');
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
@@ -68,7 +160,7 @@ class ApiController extends Controller
     }
 
     // ##### AzureAPI sentiment analysis #####
-    protected function sentimentAnalysis($results)
+    private function sentimentAnalysis($results)
     {
         $positiveLocation = array();
         $negativeLocation = array();
@@ -141,37 +233,5 @@ class ApiController extends Controller
 
         return [$sentiment_counter, $negativeLocation,$positiveLocation,$neutralLocation];
 
-    }
-
-    protected function saveToCsvFile($results, $filename, $header)
-    {
-        $fp = fopen($filename, 'w');
-        fputcsv($fp, $header);
-
-        foreach($results as $result)
-            fputcsv($fp, $result);
-
-        fclose($fp);
-    }
-
-    protected function preprocess($results, $stopwords)
-    {
-        $processedData = [];
-
-        foreach ($results as $result)
-        {
-            $hasStopWord = false;
-
-            foreach ($stopwords as $stopword)
-            {
-                if(strpos(strtolower($result['text']), strtolower($stopword)) !== false)
-                    $hasStopWord = true;
-            }
-
-            if(! $hasStopWord )
-                $processedData[] = $result;
-        }
-
-        return $processedData;
     }
 }

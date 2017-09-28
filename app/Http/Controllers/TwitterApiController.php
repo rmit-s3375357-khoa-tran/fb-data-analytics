@@ -10,7 +10,7 @@ class TwitterApiController extends ApiController
     public function collect(Request $request)
     {
         // keyword has to be set
-        if(! isset($request->keyword))
+        if($request->keyword == "")
             return json_encode([
                 'success' => false,
                 'message' => 'Keyword is required.'
@@ -19,7 +19,7 @@ class TwitterApiController extends ApiController
         // extract useful data from request
         $keyword    = $request->keyword;
         $count      = $request->count > 0 ? $request->count : 100;
-        $stopwords  = $request->stopwords!="" ? $request->stopwords : '';
+        $stopwords  = $request->stopwords;
 
         // tokenise stop words into array when it's set
         if($stopwords)
@@ -47,31 +47,8 @@ class TwitterApiController extends ApiController
         }
 
         // save both raw data and processed data into csv, pre-process with stop word
-        if($results)
-        {
-            // header for csv
-            $header = [
-                "created_at", "tweet", "user_location", "user_timezone", "geo", "place_coordinates"
-            ];
-            $filename = 'results/twitter_'.$keyword."_raw.csv";
-
-            $this->saveToCsvFile($results, $filename, $header);
-            $response = [
-                'success' => true,
-                'path' => asset($filename)
-            ];
-
-            if($request->stopwords != "")
-            {
-                $results = $this->preprocess($results, $stopwords);
-                $filename = 'results/twitter_'.$keyword."_processed.csv";
-
-                $this->saveToCsvFile($results, $filename, $header);
-                $response['path'] = asset($filename);
-            }
-
-            return json_encode($response);
-        }
+        if(count($results))
+            return $this->save($keyword, $stopwords, $results);
         else
             return json_encode([
                 'success' => false,
@@ -96,5 +73,37 @@ class TwitterApiController extends ApiController
             ];
 
         return $fields;
+    }
+
+    private function save($keyword, $stopwords, $results)
+    {
+        // header for csv
+        $header = [
+            'created_at',
+            'text',
+            'user_location',
+            'user_timezone',
+            'geo',
+            'place_longitude',
+            'place_latitude',
+        ];
+        $filename = 'results/twitter_'.$keyword."_raw.csv";
+
+        $this->saveToCsvFile($results, $filename, $header);
+        $response = [
+            'success' => true,
+            'path' => asset($filename)
+        ];
+
+        if($stopwords != "")
+        {
+            $results = $this->preprocess($results, $stopwords);
+            $filename = 'results/twitter_'.$keyword."_processed.csv";
+
+            $this->saveToCsvFile($results, $filename, $header);
+            $response['path'] = asset($filename);
+        }
+
+        return json_encode($response);
     }
 }

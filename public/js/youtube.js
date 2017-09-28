@@ -129,6 +129,9 @@ $(document).ready(function()
 
                     $('#search-results-youtube').hide();
                     $('#search-component').show();
+
+                    var url = 'api/analyse/' + keyword + '/' + stopWords;
+                    $('#analyse').attr('href', url);
                 }
                 else
                 {
