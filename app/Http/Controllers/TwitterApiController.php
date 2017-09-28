@@ -17,9 +17,9 @@ class TwitterApiController extends ApiController
             ]);
 
         // extract useful data from request
-        $keyword = $request->keyword;
-        $count = isset($request->count) && $request->count > 0 ? $request->count : 100;
-        $stopwords = isset($request->stopwords) ? $request->stopwords : '';
+        $keyword    = $request->keyword;
+        $count      = $request->count > 0 ? $request->count : 100;
+        $stopwords  = $request->stopwords!="" ? $request->stopwords : '';
 
         // tokenise stop words into array when it's set
         if($stopwords)
@@ -53,21 +53,21 @@ class TwitterApiController extends ApiController
             $header = [
                 "created_at", "tweet", "user_location", "user_timezone", "geo", "place_coordinates"
             ];
-            $filename = "raw_data_for_".$keyword.".csv";
+            $filename = 'results/twitter_'.$keyword."_raw.csv";
 
             $this->saveToCsvFile($results, $filename, $header);
             $response = [
                 'success' => true,
-                'path' => asset('results/'.$filename)
+                'path' => asset($filename)
             ];
 
-            if($stopwords)
+            if($request->stopwords != "")
             {
                 $results = $this->preprocess($results, $stopwords);
-                $filename = "preprocessed_data_for_".$keyword.".csv";
+                $filename = 'results/twitter_'.$keyword."_processed.csv";
 
                 $this->saveToCsvFile($results, $filename, $header);
-                $response['path'] = asset('results/'.$filename);
+                $response['path'] = asset($filename);
             }
 
             return json_encode($response);
@@ -77,17 +77,6 @@ class TwitterApiController extends ApiController
                 'success' => false,
                 'message' => 'Streaming failed.'
             ]);
-
-//        //print_r($results);
-//
-//        /*****Analysing sentiments******/
-//        //$sentiments = $this->sentimentAnalysis($results);
-//        //list($tweetSentiments, $coordinates) = $this->analyseTweet($results);
-//        list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates) = $this->sentimentAnalysis($results);
-//        //list($sentiments,$posCoordinates,$negCoordinates,$neuCoordinates)=$this->analyseTweet($results);
-//
-//        //return view('twitter', compact('keyword', 'results', 'sentiments', 'tweetSentiments','coordinates'));
-//        return view ('pages.twitter', compact('keyword', 'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
     }
 
     private function extractUsefulFields($result)
@@ -98,7 +87,7 @@ class TwitterApiController extends ApiController
         if( isset($result->created_at) )
             $fields = [
                 'created_at'        => $result->created_at,
-                'tweet'             => $result->text,
+                'text'              => $result->text,
                 'user_location'     => $result->user->location,
                 'user_timezone'     => $result->user->time_zone,
                 'geo'               => $result->geo,

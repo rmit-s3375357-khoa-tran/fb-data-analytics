@@ -27,7 +27,7 @@ $(document).ready(function()
                     $('#collect-twitter')
                         .html('Collect <i class="fa fa-twitter" aria-hidden="true"></i>')
                         .hide();
-                    $('#twitter-download-link').html('<em><a href="'+res["path"]+'">download</a></em>');
+                    $('#twitter-download-link').attr('href', res["path"]);
                     $('#twitter-alert-success').show();
                 }
                 else

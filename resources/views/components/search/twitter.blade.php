@@ -19,13 +19,12 @@
     </p>
     <p class="alert alert-success" id="twitter-alert-success" style="display:none">
         Data collected! <br>
-        <button class="btn btn-default">
-            <i class="fa fa-download" aria-hidden="true"></i>
-            <span id="twitter-download-link"></span>
-        </button>
+        <a id="twitter-download-link" class="btn btn-default">
+            <i class="fa fa-download" aria-hidden="true"></i> Download
+        </a>
     </p>
     <p class="alert alert-danger" id="twitter-alert-failure" style="display:none">
-        Data collection failed! <br>
+        <u>Data collection failed! </u><br>
         <span id="twitter-error-message"></span>
     </p>
 </div>

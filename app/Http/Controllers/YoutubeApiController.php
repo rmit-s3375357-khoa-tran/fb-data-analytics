@@ -12,7 +12,7 @@ class YoutubeApiController extends ApiController
 
     public function __construct()
     {
-        $this->apiKey = env('YOUTUBE_API');
+        $this->apiKey = config('setting.youtube.key');
     }
 
     public function search(Request $request)
@@ -61,16 +61,84 @@ class YoutubeApiController extends ApiController
                 ];
         }
 
-        return json_encode([
-            'success' => true,
-            'data' => $videoDetails
-        ]);
+        if(count($videoDetails))
+            return json_encode([
+                'success' => true,
+                'data' => $videoDetails
+            ]);
+        else
+            return json_encode([
+                'success' => false,
+                'message' => "No video found, please reset your search and try again."
+            ]);
+    }
 
+    public function collect(Request $request)
+    {
+        // extract all params passed in
+        $videoIds   = $request->videoIds;
+        $stopwords  = $request->stopwords;
+        $keyword    = $request->keyword;
 
-//        $keyword = isset($request->keyword) ? $request->keyword : 'youtubeapi';
-//        $results = $this->ytcomment($keyword);
-//        print_r($results);
-//        return view('pages.youtube', compact('keyword', 'results'));
+        // tokenise stop words into array when it's set
+        if($stopwords)
+            $stopwords = explode(',', $stopwords);
+
+        // video ids have to be set
+        if( $videoIds == "")
+            return json_encode([
+                'success' => false,
+                'message' => 'Please select at least one video.'
+            ]);
+
+        // holder for results
+        $comments = [];
+
+        // calculate how many comments to get from each video
+        $total = config('setting.default.numOfTexts');
+        $numOfVideos = count($videoIds);
+        $avgNumOfComments = (int) $total / $numOfVideos;
+
+        // collect comments for each video
+        foreach($videoIds as $index => $videoId)
+        {
+            // calculate counter index this video can reach for num of comments
+            $counter = ($index + 1) * $avgNumOfComments;
+
+            // prepare endpoint
+            $endpoint = "https://www.googleapis.com/youtube/v3/commentThreads?".
+                "key=" . $this->apiKey .
+                "&part=id,snippet,replies".
+                "&videoId=" . $videoId;
+
+            // get response from api and only continue when successful
+            $response = $this->sendRequest($endpoint);
+            if($response['success'])
+            {
+                // prepare result when successful response
+                $items = $response['result'];
+                foreach ($items as $item)
+                {
+                    // break out to get comments for next video
+                    if(count($comments) > $counter)
+                        break;
+
+                    $comment = $this->extractUsefulFields($item->snippet->topLevelComment->snippet);
+                    if($comment)
+                        $comments[] = $comment;
+                }
+            }
+        }
+
+        // save both raw data and processed data into csv, pre-process with stop word
+        if(count($comments))
+            return $this->save($keyword, $stopwords, $comments);
+        else
+            return json_encode([
+                'success' => false,
+                'message' => 'Failed to get comments.'
+            ]);
+
     }
 
     public function addCustomUrls(Request $request)
@@ -161,6 +229,53 @@ class YoutubeApiController extends ApiController
             'success' => true,
             'result' => $response->items
         ];
+    }
+
+    private function extractUsefulFields($result)
+    {
+        $fields = null;
+
+        // only extract info needed
+        if( isset($result->publishedAt) )
+            $fields = [
+                'created_at'            => $result->publishedAt,
+                'text'                  => $result->textOriginal,
+                'author_display_name'   => $result->authorDisplayName,
+                'author_channel_url'    => $result->authorChannelUrl,
+                'author_channel_id'     => $result->authorChannelId->value
+            ];
+
+        return $fields;
+    }
+
+    private function save($keyword, $stopwords, $results)
+    {
+        // header for csv
+        $header = [
+            'created_at',
+            'text',
+            'author_display_name',
+            'author_channel_url',
+            'author_channel_id'
+        ];
+        $filename = 'results/youtube_'.$keyword."_raw.csv";
+
+        $this->saveToCsvFile($results, $filename, $header);
+        $response = [
+            'success' => true,
+            'path' => asset($filename)
+        ];
+
+        if($stopwords != "")
+        {
+            $results = $this->preprocess($results, $stopwords);
+            $filename = 'results/youtube_'.$keyword."_processed.csv";
+
+            $this->saveToCsvFile($results, $filename, $header);
+            $response['path'] = asset($filename);
+        }
+
+        return json_encode($response);
     }
 
 

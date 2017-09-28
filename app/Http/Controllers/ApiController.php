@@ -145,7 +145,7 @@ class ApiController extends Controller
 
     protected function saveToCsvFile($results, $filename, $header)
     {
-        $fp = fopen('results/'.$filename, 'w');
+        $fp = fopen($filename, 'w');
         fputcsv($fp, $header);
 
         foreach($results as $result)
@@ -164,7 +164,7 @@ class ApiController extends Controller
 
             foreach ($stopwords as $stopword)
             {
-                if(strpos(strtolower($result['tweet']), strtolower($stopword)) !== false)
+                if(strpos(strtolower($result['text']), strtolower($stopword)) !== false)
                     $hasStopWord = true;
             }
 
