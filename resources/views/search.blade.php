@@ -13,7 +13,7 @@
     {{--</form>--}}
     {{--</div>--}}
     <div class="content">
-        <div class="title">Search for Twitter</div>
+        <div class="title">Search for Youtube</div>
         <form action="youtube" method="post">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <label>Keyword </label><input name="keyword"><br>
