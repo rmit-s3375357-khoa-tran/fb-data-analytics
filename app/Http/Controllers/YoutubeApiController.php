@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests;
+use Symfony\Component\Process\Process;
 
 class YoutubeApiController extends ApiController
 {
+
     public function search(Request $request)
     {
         $keyword = isset($request->keyword) ? $request->keyword : 'youtubeapi';
@@ -170,8 +172,21 @@ class YoutubeApiController extends ApiController
                         echo("Chanel ID " . $authorChannelId);
                         echo("Chanel URL " . $authorChannelUrl);
                         echo("<hr>");
-
+                        $testText ="Paris is a great city";
                         // 2. Analyse from text
+                        //$process = new Process('python geotext/geotext.py '.$textDisplay);
+                        $geoResult = shell_exec(' python geotext/geo.py ' .$textDisplay);
+                        echo("Geo result location: ".$geoResult. "<br>");
+
+
+//                        $item='example';
+//                        $tmp = exec("/Applications/XAMPP/htdocs/fb-data-analytics/public/geotext/geo.py .$item");
+//                        echo ("Geo result location:".$tmp);
+
+
+
+
+
 
 
                         ### Channel Section ###
