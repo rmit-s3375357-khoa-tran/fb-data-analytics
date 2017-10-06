@@ -35,7 +35,6 @@ $(document).ready(function()
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
                     $('#analyse').attr('href', url);
-                    console.log(url);
                 }
                 else
                 {
@@ -85,7 +84,6 @@ $(document).ready(function()
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
                     $('#analyse').attr('href', url);
-                    console.log(url);
                 }
                 else
                 {

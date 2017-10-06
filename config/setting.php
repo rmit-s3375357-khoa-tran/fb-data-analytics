@@ -23,9 +23,5 @@ return [
 
     'youtube' => [
         'key' => getenv('YOUTUBE_API')
-    ],
-
-    'default' => [
-        'numOfTexts' => 100
     ]
 ];

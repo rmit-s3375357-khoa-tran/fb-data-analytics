@@ -68,7 +68,15 @@
             </div>
         </div>
         <div class="row text-center">
-            <br>
+            <div>
+                <label>Number of Max Comments</label>
+                <input
+                        id="youtube-count"
+                        class="text-center"
+                        type="number"
+                ><br>
+                <small class="text-gray">By default 100</small>
+            </div>
             <button id="collect-youtube" class="btn btn-primary btn-lg">
                 Collect <i class="fa fa-youtube" aria-hidden="true"></i>
             </button>
