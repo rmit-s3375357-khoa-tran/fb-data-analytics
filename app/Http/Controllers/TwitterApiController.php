@@ -2,12 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use Abraham\TwitterOAuth\TwitterOAuth;
 use Illuminate\Http\Request;
 use Symfony\Component\Process\Process;
 
 class TwitterApiController extends ApiController
 {
     public function collect(Request $request)
+    {
+        // keyword has to be set
+        if($request->keyword == "")
+            return json_encode([
+                'success' => false,
+                'message' => 'Keyword is required.'
+            ]);
+
+        // extract useful data from request
+        $keyword    = $request->keyword;
+        $count      = $request->count > 0 ? $request->count : 100;
+        $stopwords  = $request->stopwords;
+
+        // tokenise stop words into array when it's set
+        if($stopwords)
+            $stopwords = explode(',', $stopwords);
+
+        // setup twitter oauth and client
+        $twitter = new TwitterOAuth(
+            config('setting.twitter_oauth.customer_key'),
+            config('setting.twitter_oauth.customer_secret'),
+            config('setting.twitter_oauth.access_token'),
+            config('setting.twitter_oauth.access_token_secret')
+        );
+        $twitter->get("account/verify_credentials");
+
+        // search keyword and counts
+        $response = $twitter->get("search/tweets", [
+                'q'     => $keyword,
+                'lang'  => 'en',
+                'count' => $count
+            ])->statuses;
+
+        // extract results from response
+        $results = [];
+        foreach ($response as $item)
+        {
+            // try to extract useful fields from each result and save to array if exists
+            $result = $this->extractUsefulFields($item);
+            if($result)
+                $results[] = $result;
+        }
+
+        // save both raw data and processed data into csv, pre-process with stop word
+        if(count($results))
+            return $this->save($keyword, $stopwords, $results);
+        else
+            return json_encode([
+                'success' => false,
+                'message' => 'Streaming failed.'
+            ]);
+    }
+
+    public function stream(Request $request)
     {
         // keyword has to be set
         if($request->keyword == "")

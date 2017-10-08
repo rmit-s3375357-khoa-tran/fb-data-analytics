@@ -97,6 +97,7 @@ $(document).ready(function()
     $('#collect-youtube').click(function()
     {
         var keyword     = $('#keyword').val(),
+            count       = $('#youtube-count').val(),
             stopWords   = $('#stop-words').val(),
             token       = $('#_token').val(),
             videoIds    = $('.youtube-video-id:checkbox:checked').map(function()
@@ -107,6 +108,7 @@ $(document).ready(function()
                             }).get();
 
         $(this).html('<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Collecting...');
+        $('#youtube-count').prop('disabled', true);
 
         $.ajax({
             url: 'youtube/api/collect',
@@ -114,6 +116,7 @@ $(document).ready(function()
             data: {
                 'videoIds'  : videoIds,
                 'keyword'   : keyword,
+                'count'     : count,
                 'stopwords' : stopWords,
                 '_token'    : token
             },
@@ -130,6 +133,7 @@ $(document).ready(function()
                     $('#search-results-youtube').hide();
                     $('#search-component').show();
 
+                    stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
                     $('#analyse').attr('href', url);
                 }

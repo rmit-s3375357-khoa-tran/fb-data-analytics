@@ -30,6 +30,7 @@ Route::get('api/analyse/{keyword}/{stopwords}', 'ApiController@analyse');
 |--------------------------------------------------------------------------
 */
 Route::post('twitter/api/collect', 'TwitterApiController@collect');
+Route::post('twitter/api/stream', 'TwitterApiController@stream');
 
 /*
 |--------------------------------------------------------------------------

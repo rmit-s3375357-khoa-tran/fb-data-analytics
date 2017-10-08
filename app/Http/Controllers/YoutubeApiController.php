@@ -79,6 +79,7 @@ class YoutubeApiController extends ApiController
         $videoIds   = $request->videoIds;
         $stopwords  = $request->stopwords;
         $keyword    = $request->keyword;
+        $count      = $request->count > 0 ? $request->count : 100;
 
         // tokenise stop words into array when it's set
         if($stopwords)
@@ -95,7 +96,7 @@ class YoutubeApiController extends ApiController
         $comments = [];
 
         // calculate how many comments to get from each video
-        $total = config('setting.default.numOfTexts');
+        $total = $count;
         $numOfVideos = count($videoIds);
         $avgNumOfComments = (int) $total / $numOfVideos;
 

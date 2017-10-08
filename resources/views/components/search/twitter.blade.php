@@ -10,12 +10,21 @@
                 type="number"
         >
         <br>
-        <small class="text-gray">By default 100</small>
+        <small class="text-gray">By default 100</small><br>
     </p>
     <p>
-        <button id="collect-twitter" class="btn btn-primary btn-lg start-searching">
-            Collect <i class="fa fa-twitter" aria-hidden="true"></i>
-        </button>
+        <div>
+            <button id="stream-twitter" class="btn btn-primary btn-lg start-searching">
+                Stream <i class="fa fa-twitter" aria-hidden="true"></i>
+            </button>
+            <button id="collect-twitter" class="btn btn-primary btn-lg start-searching">
+                Collect <i class="fa fa-twitter" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div id="twitter-explanation">
+            <small class="text-gray">Streaming might take a while</small><br>
+            <small class="text-gray">Max for Collecting is 100</small>
+        </div>
     </p>
     <p class="alert alert-success" id="twitter-alert-success" style="display:none">
         Data collected! <br>
