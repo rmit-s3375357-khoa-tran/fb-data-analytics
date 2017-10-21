@@ -49,14 +49,14 @@ class ApiController extends Controller
         |
         */
 
-        list($results, $sentiments, $TposCoordinates, $TnegCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
-        list($YTresults, $YTsentiments,$YTposCoordinates, $YTnegCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
+        list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
+        list($YTresults, $YTsentiments,$YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
         $posCoordinates= array_merge($TposCoordinates, $YTposCoordinates);
         $negCoordinates= array_merge($TnegCoordinates, $YTnegCoordinates);
         $neuCoordinates= array_merge($TneuCoordinates, $YTneuCoordinates);
         return view ('pages.result', compact('keyword',
             'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates',
-            'YTsentiments'));
+            'YTsentiments', 'YTresults'));
     }
 
     protected function saveToCsvFile($results, $filename, $header)
@@ -173,13 +173,15 @@ class ApiController extends Controller
         $positiveLocation = array();
         $negativeLocation = array();
         $neutralLocation = array();
+        if ($results == null)
+            return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
 
         $return = $this->azureSendRequest($results);
 
         foreach ($return['documents'] as $result) {
             $score = $result['score'];
 
-            $this->incrementSentiment($result['score'], $sentiment_counter, $result);
+            $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
 
             // Get lat and long by address
             $index = $result['id'] - 1;
@@ -187,15 +189,18 @@ class ApiController extends Controller
             {
                 $latitude =  (float) $results[$index]['place_latitude'];
                 $longitude = (float) $results[$index]['place_longitude'];
+                $results[$index]['location'] = $results[$index]['user_location'];
+
                 $this->addLocation($latitude, $longitude,
-                    $score, $positiveLocation, $negativeLocation, $neutralLocation);
+                    $result, $positiveLocation, $negativeLocation, $neutralLocation);
             }
             else{
+                $results[$index]['location'] = $results[$index]['user_timezone'];
                 $this->getLonLat($results[$index]['user_timezone'],
-                    $score,
+                    $result,
                     $positiveLocation,
                     $negativeLocation,
-                    $neutralLocation);
+                    $neutralLocation,$results);
             }
 
         }
@@ -208,26 +213,30 @@ class ApiController extends Controller
         $positiveLocation = array();
         $negativeLocation = array();
         $neutralLocation = array();
+        if ($results == null)
+            return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
 
         $return = $this->azureSendRequest($results);
         foreach ($return['documents'] as $result) {
 
             //Incrementing sentiment counter
-            $this->incrementSentiment($result['score'], $sentiment_counter, $result);
+            $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
 
             // Get lat and long by address
             $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
+            if ($address != null || $address == "undefined")
+                $results[$result['id'] - 1]['location'] = $address;
             $this->getLonLat($address,
-                $result['score'],
+                $result,
                 $positiveLocation,
                 $negativeLocation,
-                $neutralLocation);
+                $neutralLocation,$results);
 
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
-    private function getLonLat($address,$score, &$positiveLocation, &$negativeLocation, &$neutralLocation)
+    private function getLonLat($address, $result, &$positiveLocation, &$negativeLocation, &$neutralLocation)
     {
         if ($address != null) {
             $prepAddr = str_replace(' ', '+', $address);
@@ -238,24 +247,29 @@ class ApiController extends Controller
                 $latitude = $output->results{0}->geometry->location->lat;
                 $longitude =$output->results{0}->geometry->location->lng;
                 $this->addLocation($latitude, $longitude,
-                    $score, $positiveLocation, $negativeLocation, $neutralLocation);
+                    $result, $positiveLocation, $negativeLocation, $neutralLocation);
             }
         }
     }
 
     private function addLocation($latitude, $longitude,
-                                 $score, &$positiveLocation, &$negativeLocation, &$neutralLocation)
+                                 $result, &$positiveLocation, &$negativeLocation, &$neutralLocation)
     {
+        $score = $result['score'];
         if ($score < 0.5) {
             array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
-        } elseif ($score > 0.5 == "positive") {
+        } elseif ($score > 0.5) {
             array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
-        } else {
+        } elseif ($score == 0) {
             array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
+        }
+        else
+        {
+
         }
     }
 
-    private function incrementSentiment($score, &$sentiment_counter, &$result)
+    private function incrementSentiment($score, &$sentiment_counter, &$result, &$results)
     {
         if ($score < 0.5) {
             $sentiment_counter['negative']++;

@@ -235,12 +235,14 @@ class YoutubeApiController extends ApiController
     private function extractUsefulFields($result)
     {
         $fields = null;
-
+        $text = str_replace(
+            array("\r\n", "\n", "\r","'","`",'"'),
+            '',$result->textOriginal);
         // only extract info needed
         if( isset($result->publishedAt) )
             $fields = [
                 'created_at'            => $result->publishedAt,
-                'text'                  => $result->textOriginal,
+                'text'                  => $text,
                 'author_display_name'   => $result->authorDisplayName,
                 'author_channel_url'    => $result->authorChannelUrl,
                 'author_channel_id'     => $result->authorChannelId->value

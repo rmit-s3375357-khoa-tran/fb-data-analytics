@@ -114,8 +114,9 @@ class TwitterApiController extends ApiController
     private function extractUsefulFields($result)
     {
         $fields = null;
-        $text = str_replace("'", " ", $result->text);
-        $text = str_replace("`", " ", $text);
+        $text = str_replace(
+            array("\r\n", "\n", "\r","'","`",'"'),
+            "",$result->text);
         // only extract info needed
         if( isset($result->created_at) )
             $fields = [
