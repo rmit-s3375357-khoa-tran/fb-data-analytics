@@ -49,7 +49,6 @@ initMap = function() {
         latLng = new google.maps.LatLng(positive[key].lat, positive[key].lng);
         marker = new google.maps.Marker({
             position: latLng,
-            icon: twitter_pos_pin,
             title: "Positive"
         });
         markers.push(marker);
@@ -60,7 +59,6 @@ initMap = function() {
         latLng = new google.maps.LatLng(negative[key].lat, negative[key].lng);
         marker = new google.maps.Marker({
             position: latLng,
-            icon: twitter_neg_pin,
             title: "Negative"
         });
         markers.push(marker);
@@ -71,7 +69,6 @@ initMap = function() {
         latLng = new google.maps.LatLng(neutral[key].lat, neutral[key].lng);
         marker = new google.maps.Marker({
             position: latLng,
-            icon: twitter_neu_pin,
             title: "Neutral"
         });
         markers.push(marker);

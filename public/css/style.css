@@ -25,6 +25,12 @@ body {
     width: 100%;
 }
 
+#graph {
+    min-width: 310px;
+    height: 400px;
+    margin: 0 auto;
+}
+
 .text-large {
     font-size: 20px;
 }

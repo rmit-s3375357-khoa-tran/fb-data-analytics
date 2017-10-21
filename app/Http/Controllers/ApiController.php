@@ -50,6 +50,7 @@ class ApiController extends Controller
         */
 
         list($results, $sentiments, $posCoordinates, $negCoordinates, $neuCoordinates) = $this->sentimentAnalysis($twitterData);
+        //list($YTresults, $YTsentiments,$YTposCoordinates, $YTnegCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
         return view ('pages.result', compact('keyword',
             'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates'));
     }
@@ -202,6 +203,31 @@ class ApiController extends Controller
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
+    private function YTsentimentAnalysis($results)
+    {
+        $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
+        $positiveLocation = array();
+        $negativeLocation = array();
+        $neutralLocation = array();
+
+        $return = $this->azureSendRequest($results);
+        foreach ($return['documents'] as $result) {
+
+            //Incrementing sentiment counter
+            $this->incrementSentiment($result['score'], $sentiment_counter, $result);
+
+            // Get lat and long by address
+            $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
+            $this->getLonLat($address,
+                $result['score'],
+                $positiveLocation,
+                $negativeLocation,
+                $neutralLocation);
+
+        }
+        return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+    }
+
     private function getLonLat($address, $score, &$positiveLocation, &$negativeLocation, &$neutralLocation)
     {
         if ($address != null) {
@@ -273,5 +299,65 @@ class ApiController extends Controller
         return $return;
     }
 
+    private function getGeo($authorChannelId)
+    {
+        $endpoint = "https://www.googleapis.com/youtube/v3/channels?".
+            "key=" . env('YOUTUBE_API') .
+            "&part=id,contentDetails,statistics,snippet".
+            "&id=" . $authorChannelId;
 
+        // get response from api and only continue when successful
+        $response = $this->sendRequest($endpoint);
+        if($response['success'] && isset($response['result'][0]))
+        {
+            // prepare result when successful response
+            $items = $response['result'];
+            foreach($items as $item)
+            {
+                if (isset($item->snippet->country))
+                {
+                    print_r($item->snippet->country);
+                    echo("Country " . $item->snippet->country . " <br> ");
+                    $country = $item->snippet->country;
+                    return $country;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function sendRequest($endpoint)
+    {
+        $client = new Client();
+        try {
+            $apiResponse = $client->get($endpoint);
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        // in case response failed
+        if ($apiResponse->getStatusCode() != 200)
+            return [
+                'success' => false,
+                'message' => 'Response failed.'
+            ];
+
+        // in case of empty response
+        $response = json_decode( (string)$apiResponse->getBody() );
+        if (! $response)
+            return [
+                'success' => false,
+                'message' => 'Empty response.'
+            ];
+
+        // return all items from response
+        return [
+            'success' => true,
+            'result' => $response->items
+        ];
+    }
 }
