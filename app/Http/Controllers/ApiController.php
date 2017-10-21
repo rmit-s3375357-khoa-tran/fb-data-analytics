@@ -335,12 +335,7 @@ class ApiController extends Controller
             foreach($items as $item)
             {
                 if (isset($item->snippet->country))
-                {
-                    print_r($item->snippet->country);
-                    echo("Country " . $item->snippet->country . " <br> ");
-                    $country = $item->snippet->country;
-                    return $country;
-                }
+                    return $item->snippet->country;
             }
         }
 

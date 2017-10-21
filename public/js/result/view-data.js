@@ -55,7 +55,7 @@ $(document).ready(function() {
         $('#youtubeData').toggle();
         var table_body = "";
         youtube_data.forEach(function(data, index) {
-            if (data['sentiment'] == 'negative')
+            if (data['sentiment'] == 'positive')
             {
                 table_body += "<tr>"+
                     "<td>"+index+1+"</td>"+
@@ -74,7 +74,7 @@ $(document).ready(function() {
         $('#youtubeData').toggle();
         var table_body = "";
         youtube_data.forEach(function(data, index) {
-            if (data['sentiment'] == 'negative')
+            if (data['sentiment'] == 'neutral')
             {
                 table_body += "<tr>"+
                     "<td>"+index+1+"</td>"+

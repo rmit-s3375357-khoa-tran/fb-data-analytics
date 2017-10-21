@@ -13,7 +13,7 @@
         var neg_yt_sentiment = parseInt("{{ $YTsentiments['negative']  }}");
         var neu_yt_sentiment = parseInt("{{ $YTsentiments['neutral']  }}");
         var twitter_data = JSON.parse('{!! json_encode($results) !!}');
-        var youtube_data = JSON.parse('{!! json_encode($YTresults) !!}');
+        var youtube_data = JSON.parse('{!! json_encode($YTresults)!!}');
     </script>
 
     <!-- Google Map API -->

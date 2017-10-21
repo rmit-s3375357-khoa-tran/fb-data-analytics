@@ -21,10 +21,10 @@
                             <div id="twitterData"></div>
                         </div>
                     </div>
-                    @else
-                        <div class="title">Streaming failed.</div>
-                    @endif
                 </div>
+                    @else
+                        <div class="title"> Analysis not available </div>
+                    @endif
         </div>
 
         <div id="facebook" class="tab-pane fade in">
