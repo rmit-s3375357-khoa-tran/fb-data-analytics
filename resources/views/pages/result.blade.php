@@ -9,9 +9,9 @@
         var pos_twitter_sentiment = parseInt("{{$sentiments['positive']}}");
         var neg_twitter_sentiment = parseInt("{{ $sentiments['negative']}}");
         var neu_twitter_sentiment = parseInt("{{ $sentiments['neutral']}}");
-        var pos_yt_sentiment = 0;
-        var neg_yt_sentiment = 0;
-        var neu_yt_sentiment = 0;
+        var pos_yt_sentiment = parseInt("{{$YTsentiments['positive']}}");
+        var neg_yt_sentiment = parseInt("{{ $YTsentiments['negative']  }}");
+        var neu_yt_sentiment = parseInt("{{ $YTsentiments['neutral']  }}");
         var twitter_data = '{!! json_encode($results) !!}';
     </script>
 
@@ -30,6 +30,7 @@
     <script src="{{ asset('js/result/map.js') }}"></script>
     <script src="{{ asset('js/result/chart-markerclusterer.js') }}"></script>
     <script src="{{ asset('js/result/chart.js') }}"></script>
+    <script src="{{ asset('js/view-data.js') }}"></script>
     <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js'></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZKtWWEz1mLZZKGl9jdLUFHbPL5nuY5AE&callback=initMap"></script>
 @endsection
