@@ -1,5 +1,28 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: table;
+    font-weight: 100;
+}
+
+.content {
+    text-align: center;
+    display: inline-block;
+}
+
+.title {
+    font-size: 60px;
+}
+
 #map {
-    height: 50%;
+    margin-top: 70px;
+    height: 400px;
+    width: 100%;
 }
 
 .text-large {
