@@ -17,8 +17,8 @@ body {
 
 .title {
     font-size: 60px;
-    margin-left: auto;
-    margin-right: auto;
+    text-align: center;
+    margin: 20px;
 }
 
 #map {

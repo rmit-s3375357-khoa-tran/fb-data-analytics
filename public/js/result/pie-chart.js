@@ -3,13 +3,25 @@ $(document).ready(function() {
     var total_twitter = pos_twitter_sentiment + neg_twitter_sentiment + neu_twitter_sentiment,
         total_youtube = pos_yt_sentiment + neg_yt_sentiment + neu_yt_sentiment;
     var max = Math.max(total_twitter, total_youtube);
-    var new_pos_twitter_sentiment = pos_twitter_sentiment*(max/total_twitter),
-        new_neg_twitter_sentiment = neg_twitter_sentiment*(max/total_twitter),
-        new_neu_twitter_sentiment = neu_twitter_sentiment*(max/total_twitter),
+    var new_pos_twitter_sentiment = 0,
+        new_neg_twitter_sentiment = 0,
+        new_neu_twitter_sentiment = 0,
 
-        new_pos_yt_sentiment = pos_yt_sentiment*(max/total_youtube),
-        new_neg_yt_sentiment = neg_yt_sentiment*(max/total_youtube),
+        new_pos_yt_sentiment = 0,
+        new_neg_yt_sentiment = 0,
+        new_neu_yt_sentiment = 0;
+
+    if (total_twitter != 0){
+        new_pos_twitter_sentiment = pos_twitter_sentiment*(max/total_twitter);
+        new_neg_twitter_sentiment = neg_twitter_sentiment*(max/total_twitter);
+        new_neu_twitter_sentiment = neu_twitter_sentiment*(max/total_twitter);
+    }
+
+    if (total_youtube != 0 ){
+        new_pos_yt_sentiment = pos_yt_sentiment*(max/total_youtube);
+        new_neg_yt_sentiment = neg_yt_sentiment*(max/total_youtube);
         new_neu_yt_sentiment = neu_yt_sentiment*(max/total_youtube);
+    }
 
     var total_pos = new_pos_twitter_sentiment + new_pos_yt_sentiment,
         total_neg = new_neg_twitter_sentiment + new_neg_yt_sentiment,
@@ -32,7 +44,7 @@ $(document).ready(function() {
         categories = ['Positive', 'Negative', 'Neutral'],
         data = [{
             y: total_pos,
-            color: 'rgb(0,142,255)',
+            color: '#0095BE',
             drilldown: {
                 name: 'Positive',
                 categories: ['Youtube', 'Twitter', 'Facebook'],
@@ -41,7 +53,7 @@ $(document).ready(function() {
             }
         }, {
             y: total_neg,
-            color: 'rgb(255,0,0)',
+            color: '#E16361',
             drilldown: {
                 name: 'Negative',
                 categories: ['Youtube', 'Twitter', 'Facebook'],
@@ -50,7 +62,7 @@ $(document).ready(function() {
             }
         }, {
             y: total_neu,
-            color:  'rgb(255,186,0)',
+            color:  '#7B8A8E',
             drilldown: {
                 name: 'Neutral',
                 categories: ['Youtube', 'Twitter', 'Facebook'],

@@ -44,12 +44,15 @@ $(document).ready(function() {
         },
         series: [{
             name: 'Positive',
+            color: '#0095BE',
             data: [pos_twitter_sentiment, 0, pos_yt_sentiment]
         }, {
             name: 'Negative',
+            color: '#E16361',
             data: [neg_twitter_sentiment, 0, neg_yt_sentiment]
         }, {
             name: 'Neutral',
+            color: '#7B8A8E',
             data: [neu_twitter_sentiment, 0, neu_yt_sentiment]
         }]
     });
