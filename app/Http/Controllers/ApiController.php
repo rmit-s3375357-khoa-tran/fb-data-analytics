@@ -27,35 +27,22 @@ class ApiController extends Controller
         $type = ($stopwords == "null") ? 'raw' : 'processed';
 
         // get data for all resources
-        $twitterData    = $this->getDataFromCsv($keyword, $type, 'twitter');
-        $facebookData   = $this->getDataFromCsv($keyword, $type, 'facebook');
-        $youtubeData    = $this->getDataFromCsv($keyword, $type, 'youtube');
+        $twitterData = $this->getDataFromCsv($keyword, $type, 'twitter');
+        $facebookData = $this->getDataFromCsv($keyword, $type, 'facebook');
+        $youtubeData = $this->getDataFromCsv($keyword, $type, 'youtube');
 
-        /*
-        |--------------------------------------------------------------------------
-        | IMPORTANT NOTE
-        |--------------------------------------------------------------------------
-        |
-        | The above data might be null when it was not collected in the 1st place,
-        | so please check it before using them ( if($twitterData) will return true
-        | when it is not null).
-        |
-        | In the end, return a single result page with whatever data needed to
-        | display the page Nancy showed us the other day.
-        |
-        | OH YEAH we are almost there!!!
-        |
-        |                                               Grace
-        |
-        */
-
+        // analyse data
         list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
-        list($YTresults, $YTsentiments,$YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
-        $posCoordinates= array_merge($TposCoordinates, $YTposCoordinates);
-        $negCoordinates= array_merge($TnegCoordinates, $YTnegCoordinates);
-        $neuCoordinates= array_merge($TneuCoordinates, $YTneuCoordinates);
-        return view ('pages.result', compact('keyword',
-            'results', 'sentiments', 'posCoordinates','negCoordinates','neuCoordinates',
+        list($YTresults, $YTsentiments, $YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
+        $posCoordinates = array_merge($TposCoordinates, $YTposCoordinates);
+        $negCoordinates = array_merge($TnegCoordinates, $YTnegCoordinates);
+        $neuCoordinates = array_merge($TneuCoordinates, $YTneuCoordinates);
+
+        // remove files after analysing
+        $this->emptyResultsDirectory();
+
+        return view('pages.result', compact('keyword',
+            'results', 'sentiments', 'posCoordinates', 'negCoordinates', 'neuCoordinates',
             'YTsentiments', 'YTresults'));
     }
 
@@ -64,8 +51,9 @@ class ApiController extends Controller
         $fp = fopen($filename, 'w');
         fputcsv($fp, $header);
 
-        foreach($results as $result)
+        foreach ($results as $result) {
             fputcsv($fp, $result);
+        }
 
         fclose($fp);
     }
@@ -74,18 +62,18 @@ class ApiController extends Controller
     {
         $processedData = [];
 
-        foreach ($results as $result)
-        {
+        foreach ($results as $result) {
             $hasStopWord = false;
 
-            foreach ($stopwords as $stopword)
-            {
-                if(strpos(strtolower($result['text']), strtolower($stopword)) !== false)
+            foreach ($stopwords as $stopword) {
+                if (strpos(strtolower($result['text']), strtolower($stopword)) !== false) {
                     $hasStopWord = true;
+                }
             }
 
-            if(! $hasStopWord )
+            if (!$hasStopWord) {
                 $processedData[] = $result;
+            }
         }
 
         return $processedData;
@@ -95,22 +83,23 @@ class ApiController extends Controller
     {
         // parse the filename and open file
         $filename = 'results/' . $source . '_' . $keyword . '_' . $type . '.csv';
-        try{
+        try {
             $file = fopen($filename, 'r');
-        } catch(ErrorException $e) {
+        } catch (ErrorException $e) {
             return null;
         }
 
         // get header for field name later
-        if($result = fgetcsv($file))
+        if ($result = fgetcsv($file)) {
             $header = $result;
+        }
 
         // put each line into array
         $data = [];
-        while($result = fgetcsv($file))
-        {
-            foreach($result as $index => $value)
+        while ($result = fgetcsv($file)) {
+            foreach ($result as $index => $value) {
                 $field[$header[$index]] = $value;
+            }
 
             $data[] = $field;
         }
@@ -173,8 +162,9 @@ class ApiController extends Controller
         $positiveLocation = array();
         $negativeLocation = array();
         $neutralLocation = array();
-        if ($results == null)
+        if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+        }
 
         $return = $this->azureSendRequest($results);
 
@@ -186,24 +176,22 @@ class ApiController extends Controller
             // Get lat and long by address
             $index = $result['id'] - 1;
             $results[$index]['user_location'] = str_replace(
-                array("\r\n", "\n", "\r","'","`",'"'),
-                "",$results[$index]['user_location']);
-            if ($results[$index]['place_longitude'] != null and $results[$index]['place_latitude'] != null)
-            {
-                $latitude =  (float) $results[$index]['place_latitude'];
-                $longitude = (float) $results[$index]['place_longitude'];
+                array("\r\n", "\n", "\r", "'", "`", '"'),
+                "", $results[$index]['user_location']);
+            if ($results[$index]['place_longitude'] != null and $results[$index]['place_latitude'] != null) {
+                $latitude = (float)$results[$index]['place_latitude'];
+                $longitude = (float)$results[$index]['place_longitude'];
                 $results[$index]['location'] = $results[$index]['user_location'];
 
                 $this->addLocation($latitude, $longitude,
                     $result, $positiveLocation, $negativeLocation, $neutralLocation);
-            }
-            else{
+            } else {
                 $results[$index]['location'] = $results[$index]['user_timezone'];
                 $this->getLonLat($results[$index]['user_timezone'],
                     $result,
                     $positiveLocation,
                     $negativeLocation,
-                    $neutralLocation,$results);
+                    $neutralLocation, $results);
             }
 
         }
@@ -216,8 +204,9 @@ class ApiController extends Controller
         $positiveLocation = array();
         $negativeLocation = array();
         $neutralLocation = array();
-        if ($results == null)
+        if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+        }
 
         $return = $this->azureSendRequest($results);
         foreach ($return['documents'] as $result) {
@@ -228,15 +217,16 @@ class ApiController extends Controller
             // Get lat and long by address
             $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
             $results[$result['id'] - 1]['author_display_name'] = str_replace(
-                array("\r\n", "\n", "\r","'","`",'"')
-                , " ", $results[$result['id'] - 1]['author_display_name'] );
-            if ($address != null || $address == "undefined")
+                array("\r\n", "\n", "\r", "'", "`", '"')
+                , " ", $results[$result['id'] - 1]['author_display_name']);
+            if ($address != null || $address == "undefined") {
                 $results[$result['id'] - 1]['location'] = $address;
+            }
             $this->getLonLat($address,
                 $result,
                 $positiveLocation,
                 $negativeLocation,
-                $neutralLocation,$results);
+                $neutralLocation, $results);
 
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
@@ -248,19 +238,23 @@ class ApiController extends Controller
             $prepAddr = str_replace(' ', '+', $address);
             $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
             $output = json_decode($geocode);
-            if ($output->results != null)
-            {
+            if ($output->results != null) {
                 $latitude = $output->results{0}->geometry->location->lat;
-                $longitude =$output->results{0}->geometry->location->lng;
+                $longitude = $output->results{0}->geometry->location->lng;
                 $this->addLocation($latitude, $longitude,
                     $result, $positiveLocation, $negativeLocation, $neutralLocation);
             }
         }
     }
 
-    private function addLocation($latitude, $longitude,
-                                 $result, &$positiveLocation, &$negativeLocation, &$neutralLocation)
-    {
+    private function addLocation(
+        $latitude,
+        $longitude,
+        $result,
+        &$positiveLocation,
+        &$negativeLocation,
+        &$neutralLocation
+    ) {
         $score = $result['score'];
         if ($score < 0.5) {
             array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
@@ -269,8 +263,6 @@ class ApiController extends Controller
         } elseif ($score == 0.5) {
             array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
         }
-        else
-        {}
     }
 
     private function incrementSentiment($score, &$sentiment_counter, &$result, &$results)
@@ -303,13 +295,14 @@ class ApiController extends Controller
 
         /*Creating a request*/
         $client = new Client(); //GuzzleHttp\Client
-        $res = $client->request('POST', 'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
-            'headers' => [
-                'content-type' => 'application/json',
-                'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
-            ],
-            'body' => $body_message
-        ]);
+        $res = $client->request('POST',
+            'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
+                'headers' => [
+                    'content-type' => 'application/json',
+                    'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
+                ],
+                'body' => $body_message
+            ]);
 
         /*Response returned*/
         $json = "";
@@ -325,21 +318,20 @@ class ApiController extends Controller
 
     private function getGeo($authorChannelId)
     {
-        $endpoint = "https://www.googleapis.com/youtube/v3/channels?".
+        $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
             "key=" . env('YOUTUBE_API') .
-            "&part=id,contentDetails,statistics,snippet".
+            "&part=id,contentDetails,statistics,snippet" .
             "&id=" . $authorChannelId;
 
         // get response from api and only continue when successful
         $response = $this->sendRequest($endpoint);
-        if($response['success'] && isset($response['result'][0]))
-        {
+        if ($response['success'] && isset($response['result'][0])) {
             // prepare result when successful response
             $items = $response['result'];
-            foreach($items as $item)
-            {
-                if (isset($item->snippet->country))
+            foreach ($items as $item) {
+                if (isset($item->snippet->country)) {
                     return $item->snippet->country;
+                }
             }
         }
 
@@ -359,19 +351,21 @@ class ApiController extends Controller
         }
 
         // in case response failed
-        if ($apiResponse->getStatusCode() != 200)
+        if ($apiResponse->getStatusCode() != 200) {
             return [
                 'success' => false,
                 'message' => 'Response failed.'
             ];
+        }
 
         // in case of empty response
-        $response = json_decode( (string)$apiResponse->getBody() );
-        if (! $response)
+        $response = json_decode((string)$apiResponse->getBody());
+        if (!$response) {
             return [
                 'success' => false,
                 'message' => 'Empty response.'
             ];
+        }
 
         // return all items from response
         return [
