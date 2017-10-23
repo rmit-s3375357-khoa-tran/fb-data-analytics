@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Request;
+use Carbon\Carbon;
 use ErrorException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
@@ -46,20 +47,68 @@ class ApiController extends Controller
             'YTsentiments', 'YTresults'));
     }
 
+    protected function save($request, $results, $header, $origin)
+    {
+        $filename = 'results/' . $origin . '_' . $request->keyword . "_raw.csv";
+        $this->saveToCsvFile($results, $filename, $header);
+        $response = [
+            'success' => true,
+            'path' => asset($filename)
+        ];
+
+        if ($request->stopwords != "" || $request->date != "") {
+            $results = $this->preprocess($results, $request);
+            $filename = 'results/' . $origin . '_' . $request->keyword . "_processed.csv";
+            $this->saveToCsvFile($results, $filename, $header);
+            $response['path'] = asset($filename);
+        }
+
+        return json_encode($response);
+    }
+
     protected function saveToCsvFile($results, $filename, $header)
     {
         $fp = fopen($filename, 'w');
         fputcsv($fp, $header);
 
         foreach ($results as $result) {
-            fputcsv($fp, $result);
+            try {
+                fputcsv($fp, $result);
+            } catch (\Exception $e) {
+
+            }
         }
 
         fclose($fp);
     }
 
-    protected function preprocess($results, $stopwords)
+    protected function preprocess($results, $request)
     {
+        // process date limit
+        $startingDate = $request->date != "" ?
+            Carbon::parse($request->date) :
+            Carbon::today()->subMonth();
+
+        // placeholder for result
+        $processedData = [];
+        foreach ($results as $result) {
+            if ($result['created_at'] >= $startingDate) {
+                $processedData[] = $result;
+            }
+        }
+
+        // process stop words
+        if($request->stopwords != "")
+            $processedData = $this->processStopWords($processedData, $request->stopwords);
+
+        return $processedData;
+    }
+
+    private function processStopWords($results, $stopwordString)
+    {
+        $stopwords = explode(',', $stopwordString);
+
+        // placeholder for result
         $processedData = [];
 
         foreach ($results as $result) {
@@ -107,21 +156,22 @@ class ApiController extends Controller
         return $data;
     }
 
-    // ##### DatumboxAPI sentiment analysis #####
+    /**
+     * DatumboxAPI sentiment analysis
+     *
+     * @param $results
+     * @return array
+     */
     private function analyseTweet($results)
     {
-//        require_once('DatumboxAPI.php');
         $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        //$location = array();
         $positiveLocation = array();
         $negativeLocation = array();
         $neutralLocation = array();
 
-        //echo "<br> DATUMBOX <br>";
         foreach ($results as $index => $result) {
             $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['tweet']));
-            //echo "id: " . ($index + 1) . " value: " . $message . "<br>";
 
             if ($message == "negative") {
                 $sentiment_counter['negative']++;
@@ -131,7 +181,6 @@ class ApiController extends Controller
                 $sentiment_counter['neutral']++;
             }
 
-
             // Get lat and long by address
             $address = $result['user_timezone']; // Google HQ
             if ($address != null) {
@@ -140,7 +189,7 @@ class ApiController extends Controller
                 $output = json_decode($geocode);
                 $latitude = $output->results[0]->geometry->location->lat;
                 $longitude = $output->results[0]->geometry->location->lng;
-                //array_push($location,array("lat"=>$latitude,"lng"=>$longitude));
+
                 if ($message == "negative") {
                     array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
                 } elseif ($message == "positive") {
@@ -151,11 +200,15 @@ class ApiController extends Controller
             }
         }
 
-        return [$sentiment_counter, $negativeLocation,$positiveLocation,$neutralLocation];
-
+        return [$sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
-    // ##### AzureAPI sentiment analysis #####
+    /**
+     * AzureAPI sentiment analysis
+     *
+     * @param $results
+     * @return array
+     */
     private function sentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
@@ -178,7 +231,7 @@ class ApiController extends Controller
             $results[$index]['user_location'] = str_replace(
                 array("\r\n", "\n", "\r", "'", "`", '"'),
                 "", $results[$index]['user_location']);
-            if ($results[$index]['place_longitude'] != null and $results[$index]['place_latitude'] != null) {
+            if (isset($results[$index]['place_longitude']) and isset($results[$index]['place_latitude'])) {
                 $latitude = (float)$results[$index]['place_latitude'];
                 $longitude = (float)$results[$index]['place_longitude'];
                 $results[$index]['location'] = $results[$index]['user_location'];

@@ -5,7 +5,8 @@ $(document).ready(function()
         var keyword     = $('#keyword').val(),
             stopWords   = $('#stop-words').val(),
             numOfTweets = $('#number-of-tweets').val(),
-            token       = $('#_token').val();
+            token       = $('#_token').val(),
+            startingDate= $('#starting-date').val();
 
         $(this).html('<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Streaming...');
         $('#collect-twitter').hide();
@@ -17,6 +18,7 @@ $(document).ready(function()
                 'keyword'   : keyword,
                 'stopwords' : stopWords,
                 'count'     : numOfTweets,
+                'date'      : startingDate,
                 '_token'    : token
             },
             success: function(response)
@@ -54,7 +56,8 @@ $(document).ready(function()
         var keyword     = $('#keyword').val(),
             stopWords   = $('#stop-words').val(),
             numOfTweets = $('#number-of-tweets').val(),
-            token       = $('#_token').val();
+            token       = $('#_token').val(),
+            startingDate= $('#starting-date').val();
 
         $(this).html('<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Collecting...');
         $('#stream-twitter').hide();
@@ -66,6 +69,7 @@ $(document).ready(function()
                 'keyword'   : keyword,
                 'stopwords' : stopWords,
                 'count'     : numOfTweets,
+                'date'      : startingDate,
                 '_token'    : token
             },
             success: function(response)
