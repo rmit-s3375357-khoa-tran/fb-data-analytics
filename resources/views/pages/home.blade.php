@@ -1,9 +1,11 @@
 @extends('pages.master')
 
 @section('content')
-    <input id="_token" value="{{ csrf_token() }}" hidden>
-    @include('components.search.search')
-    @include('components.results.results')
+    <div class="container">
+        <input id="_token" value="{{ csrf_token() }}" hidden>
+        @include('components.search.search')
+        @include('components.results.results')
+    </div>
 @endsection
 
 @section('scripts')

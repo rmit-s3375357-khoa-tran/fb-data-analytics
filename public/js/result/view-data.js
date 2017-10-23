@@ -57,13 +57,15 @@ $(document).ready(function() {
         youtube_data.forEach(function(data, index) {
             if (data['sentiment'] == 'positive')
             {
+                var location = data['location'];
+                if (location == undefined) { location = ""; }
                 table_body += "<tr>"+
                     "<td>"+index+1+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['author_display_name']+"</div></td>"+
                     "<td><div>"+data['author_channel_url']+"</div></td>"+
-                    "<td><div>"+data['location']+"</div></td>"+
+                    "<td><div>"+location+"</div></td>"+
                     "</tr>";
             }
         });
@@ -76,13 +78,15 @@ $(document).ready(function() {
         youtube_data.forEach(function(data, index) {
             if (data['sentiment'] == 'neutral')
             {
+                var location = data['location'];
+                if (location == undefined) { location = ""; }
                 table_body += "<tr>"+
                     "<td>"+index+1+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['author_display_name']+"</div></td>"+
                     "<td><div>"+data['author_channel_url']+"</div></td>"+
-                    "<td><div>"+data['location']+"</div></td>"+
+                    "<td><div>"+location+"</div></td>"+
                     "</tr>";
             }
         });
@@ -95,13 +99,15 @@ $(document).ready(function() {
         youtube_data.forEach(function(data, index) {
             if (data['sentiment'] == 'negative')
             {
+                var location = data['location'];
+                if (location == undefined) { location = ""; }
                 table_body += "<tr>"+
                     "<td>"+index+1+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['author_display_name']+"</div></td>"+
                     "<td><div>"+data['author_channel_url']+"</div></td>"+
-                    "<td><div>"+data['location']+"</div></td>"+
+                    "<td><div>"+location+"</div></td>"+
                     "</tr>";
             }
         });

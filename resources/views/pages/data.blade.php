@@ -6,25 +6,28 @@
     </ul>
 
     <div class="tab-content">
-
         <div id="twitter" class="tab-pane fade in active">
             @if($results)
-                <h3>Twitter</h3>
-                <p>Select sentiment to view data</p>
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <h3>Twitter</h3>
+                    <p>Select sentiment to view data</p>
+                    <button id="twitter_pos_button" class="btn btn-primary">Positive sentiments</button>
+                    <button id="twitter_neg_button" class="btn btn-danger">Negative sentiments</button>
+                    <button id="twitter_neu_button" class="btn btn-default">Neutral sentiments</button>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
                 <div class="panel-group" id="accordion">
-                            <button id="twitter_pos_button" class="btn btn-primary">Positive sentiments</button>
-                            <button id="twitter_neg_button" class="btn btn-danger">Negative sentiments</button>
-                            <button id="twitter_neu_button" class="btn btn-default">Neutral sentiments</button>
-
                     <div class="panel">
                         <div class="panel-body">
                             <div id="twitterData"></div>
                         </div>
                     </div>
                 </div>
-                    @else
-                        <div class="title"> Analysis not available </div>
-                    @endif
+            @else
+               <div class="title"> Analysis not available </div>
+            @endif
         </div>
 
         <div id="facebook" class="tab-pane fade in">
@@ -33,22 +36,26 @@
 
         <div id="youtube" class="tab-pane fade in">
             @if($YTresults)
-                <h3>Youtube</h3>
-                <p>Select sentiment to view data</p>
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <h3>Youtube</h3>
+                    <p>Select sentiment to view data</p>
+                    <button id="youtube_pos_button" class="btn btn-primary">Positive sentiments</button>
+                    <button id="youtube_neg_button" class="btn btn-danger">Negative sentiments</button>
+                    <button id="youtube_neu_button" class="btn btn-default">Neutral sentiments</button>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
                 <div class="panel-group" id="accordion">
-                            <button id="youtube_pos_button" class="btn btn-primary">Positive sentiments</button>
-                            <button id="youtube_neg_button" class="btn btn-danger">Negative sentiments</button>
-                            <button id="youtube_neu_button" class="btn btn-default">Neutral sentiments</button>
-
                     <div class="panel">
                         <div class="panel-body">
                             <div id="youtubeData"></div>
                         </div>
                     </div>
+                </div>
                     @else
                         <div class="title"> Analysis not available </div>
                     @endif
-                </div>
         </div>
     </div>
 </div>

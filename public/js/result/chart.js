@@ -1,7 +1,3 @@
-/**
- * Created by Nancy on 19-Oct-17.
- */
-
 console.log("Testing");
 console.log(pos_twitter_sentiment);
 console.log(neg_twitter_sentiment);
@@ -9,8 +5,6 @@ console.log(neu_twitter_sentiment);
 console.log(pos_yt_sentiment);
 console.log(neg_yt_sentiment);
 console.log(neu_yt_sentiment);
-
-
 $(document).ready(function() {
     var chart = new Highcharts.Chart({
         chart: {

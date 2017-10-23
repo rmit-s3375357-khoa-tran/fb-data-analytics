@@ -185,6 +185,9 @@ class ApiController extends Controller
 
             // Get lat and long by address
             $index = $result['id'] - 1;
+            $results[$index]['user_location'] = str_replace(
+                array("\r\n", "\n", "\r","'","`",'"'),
+                "",$results[$index]['user_location']);
             if ($results[$index]['place_longitude'] != null and $results[$index]['place_latitude'] != null)
             {
                 $latitude =  (float) $results[$index]['place_latitude'];
@@ -224,6 +227,9 @@ class ApiController extends Controller
 
             // Get lat and long by address
             $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
+            $results[$result['id'] - 1]['author_display_name'] = str_replace(
+                array("\r\n", "\n", "\r","'","`",'"')
+                , " ", $results[$result['id'] - 1]['author_display_name'] );
             if ($address != null || $address == "undefined")
                 $results[$result['id'] - 1]['location'] = $address;
             $this->getLonLat($address,
@@ -260,13 +266,11 @@ class ApiController extends Controller
             array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
         } elseif ($score > 0.5) {
             array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
-        } elseif ($score == 0) {
+        } elseif ($score == 0.5) {
             array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
         }
         else
-        {
-
-        }
+        {}
     }
 
     private function incrementSentiment($score, &$sentiment_counter, &$result, &$results)
