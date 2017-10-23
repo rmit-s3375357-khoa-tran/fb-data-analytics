@@ -1,8 +1,7 @@
 /vendor
 /node_modules
-/public/storage
-Homestead.yaml
-Homestead.json
 .env
-config.ini
-twitterStream.txt
+public/config.ini
+public/tweepy/*
+public/results
+public/*.json
