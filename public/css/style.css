@@ -1,5 +1,40 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: table;
+    font-weight: 100;
+}
+
+.content {
+    text-align: center;
+    display: inline-block;
+}
+
+.title {
+    font-size: 60px;
+    text-align: center;
+    margin: 20px;
+}
+
 #map {
-    height: 50%;
+    margin-top: 64px;
+    height: 400px;
+    width: 100%;
+}
+
+#graph {
+    min-width: 310px;
+    height: 400px;
+    margin: 0 auto;
+}
+
+ul.nav.nav-tabs {
+    border: 1px solid rgba(0, 0, 0, 0.17);
 }
 
 .text-large {
@@ -13,4 +48,9 @@
 .social-media-logo {
     width: 270px;
     height: 50px;
+}
+
+.navbar.navbar-default.navbar-fixed-top {
+    background-color: #313035;
+    color:white;
 }

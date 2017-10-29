@@ -18,11 +18,12 @@ class YoutubeApiController extends ApiController
     public function search(Request $request)
     {
         // keyword has to be set
-        if( $request->keyword == "")
+        if ($request->keyword == "") {
             return json_encode([
                 'success' => false,
                 'message' => 'Keyword is required.'
             ]);
+        }
 
         // extract useful data from request
         $keyword = $request->keyword;
@@ -33,64 +34,61 @@ class YoutubeApiController extends ApiController
             "key=" . $this->apiKey .
             "&part=id,snippet" .
             "&q=" . $keyword .
-            "&maxResults=" . $count*2 . // to collect twice results for filtering
+            "&maxResults=" . $count * 2 . // to collect twice results for filtering
             "&type=video";
 
         // get response from api and return if failed
         $response = $this->sendRequest($endpoint);
-        if(! $response['success'])
+        if (!$response['success']) {
             return json_encode($response);
+        }
 
         // prepare result when successful response
         $items = $response['result'];
         $videoDetails = [];
-        foreach ($items as $item)
-        {
+        foreach ($items as $item) {
             $publishedAt = Carbon::parse($item->snippet->publishedAt);
-            $startingDate = $request->date != ""?
+            $startingDate = $request->date != "" ?
                 Carbon::parse($request->date) :
-                Carbon::today()->subWeek();
+                Carbon::today()->subMonth();
 
             // when it's published after starting date and not reach count yet
-            if($publishedAt >= $startingDate && count($videoDetails) < $count)
+            if ($publishedAt >= $startingDate && count($videoDetails) < $count) {
                 $videoDetails[] = [
-                    'videoId'       => $item->id->videoId,
-                    'title'         => $item->snippet->title,
-                    'description'   => $item->snippet->description,
-                    'publishedAt'   => $publishedAt->toDateTimeString()
+                    'videoId' => $item->id->videoId,
+                    'title' => $item->snippet->title,
+                    'description' => $item->snippet->description,
+                    'publishedAt' => $publishedAt->toDateTimeString()
                 ];
+            }
         }
 
-        if(count($videoDetails))
+        if (count($videoDetails)) {
             return json_encode([
                 'success' => true,
                 'data' => $videoDetails
             ]);
-        else
+        } else {
             return json_encode([
                 'success' => false,
                 'message' => "No video found, please reset your search and try again."
             ]);
+        }
     }
 
     public function collect(Request $request)
     {
         // extract all params passed in
-        $videoIds   = $request->videoIds;
-        $stopwords  = $request->stopwords;
-        $keyword    = $request->keyword;
-        $count      = $request->count > 0 ? $request->count : 100;
-
-        // tokenise stop words into array when it's set
-        if($stopwords)
-            $stopwords = explode(',', $stopwords);
+        $videoIds = $request->videoIds;
+        $count = $request->count > 0 ? $request->count : 100;
 
         // video ids have to be set
-        if( $videoIds == "")
+        if ($videoIds == "") {
             return json_encode([
                 'success' => false,
                 'message' => 'Please select at least one video.'
             ]);
+        }
 
         // holder for results
         $comments = [];
@@ -98,91 +96,101 @@ class YoutubeApiController extends ApiController
         // calculate how many comments to get from each video
         $total = $count;
         $numOfVideos = count($videoIds);
-        $avgNumOfComments = (int) $total / $numOfVideos;
+        $avgNumOfComments = (int)$total / $numOfVideos;
 
         // collect comments for each video
-        foreach($videoIds as $index => $videoId)
-        {
+        foreach ($videoIds as $index => $videoId) {
             // calculate counter index this video can reach for num of comments
             $counter = ($index + 1) * $avgNumOfComments;
 
             // prepare endpoint
-            $endpoint = "https://www.googleapis.com/youtube/v3/commentThreads?".
+            $endpoint = "https://www.googleapis.com/youtube/v3/commentThreads?" .
                 "key=" . $this->apiKey .
-                "&part=id,snippet,replies".
+                "&part=id,snippet,replies" .
                 "&videoId=" . $videoId;
 
             // get response from api and only continue when successful
             $response = $this->sendRequest($endpoint);
-            if($response['success'])
-            {
+            if ($response['success']) {
                 // prepare result when successful response
                 $items = $response['result'];
-                foreach ($items as $item)
-                {
+                foreach ($items as $item) {
                     // break out to get comments for next video
-                    if(count($comments) > $counter)
+                    if (count($comments) > $counter) {
                         break;
+                    }
 
                     $comment = $this->extractUsefulFields($item->snippet->topLevelComment->snippet);
-                    if($comment)
+                    if ($comment) {
                         $comments[] = $comment;
+                    }
                 }
             }
         }
 
         // save both raw data and processed data into csv, pre-process with stop word
-        if(count($comments))
-            return $this->save($keyword, $stopwords, $comments);
-        else
+        if (count($comments)) {
+            // header for csv
+            $header = [
+                'created_at',
+                'text',
+                'author_display_name',
+                'author_channel_url',
+                'author_channel_id'
+            ];
+
+            return $this->save($request, $comments, $header, 'youtube');
+        } else {
             return json_encode([
                 'success' => false,
                 'message' => 'Failed to get comments.'
             ]);
+        }
 
     }
 
     public function addCustomUrls(Request $request)
     {
         // return false when urls not set
-        if(! isset($request->urls) && $request->urls == "")
+        if (!isset($request->urls) && $request->urls == "") {
             return json_encode([
                 'success' => false,
                 'message' => 'URL(s) not found.'
             ]);
+        }
 
         // get video info from urls
         $items = [];
         $urls = explode(",", $request->urls);
-        foreach($urls as $url)
-        {
+        foreach ($urls as $url) {
             // get the video id
-            parse_str( parse_url( $url, PHP_URL_QUERY ), $my_array_of_vars );
+            parse_str(parse_url($url, PHP_URL_QUERY), $my_array_of_vars);
             $id = $my_array_of_vars['v'];
 
             // prepare endpoint
-            $endpoint = 'https://www.googleapis.com/youtube/v3/videos?'.
+            $endpoint = 'https://www.googleapis.com/youtube/v3/videos?' .
                 "key=" . $this->apiKey .
                 "&part=snippet" .
                 '&id=' . $id;
 
             // get response from api and return if failed
             $response = $this->sendRequest($endpoint);
-            if($response['success'] && isset($response['result'][0]))
+            if ($response['success'] && isset($response['result'][0])) {
                 array_push($items, $response['result'][0]);
+            }
         }
 
         // when all urls are invalid
-        if(! count($items))
+        if (!count($items)) {
             return json_encode([
                 'success' => false,
                 'message' => 'URL(s) not found.'
             ]);
+        }
 
         // get response from api and add to array only when successful
         $videoDetails = [];
-        foreach ($items as $item)
-        {
+        foreach ($items as $item) {
             $publishedAt = Carbon::parse($item->snippet->publishedAt);
             $videoDetails[] = [
                 'videoId' => $item->id,
@@ -193,8 +201,8 @@ class YoutubeApiController extends ApiController
         }
 
         return json_encode([
-            'success'   => true,
-            'data'      => $videoDetails
+            'success' => true,
+            'data' => $videoDetails
         ]);
     }
 
@@ -211,19 +219,21 @@ class YoutubeApiController extends ApiController
         }
 
         // in case response failed
-        if ($apiResponse->getStatusCode() != 200)
+        if ($apiResponse->getStatusCode() != 200) {
             return [
                 'success' => false,
                 'message' => 'Response failed.'
             ];
+        }
 
         // in case of empty response
-        $response = json_decode( (string)$apiResponse->getBody() );
-        if (! $response)
+        $response = json_decode((string)$apiResponse->getBody());
+        if (!$response) {
             return [
                 'success' => false,
                 'message' => 'Empty response.'
             ];
+        }
 
         // return all items from response
         return [
@@ -237,45 +247,20 @@ class YoutubeApiController extends ApiController
         $fields = null;
 
         // only extract info needed
-        if( isset($result->publishedAt) )
+        if (isset($result->publishedAt)) {
+            $text = str_replace(
+                array("\r\n", "\n", "\r", "'", "`", '"'),
+                '', $result->textOriginal);
+
             $fields = [
-                'created_at'            => $result->publishedAt,
-                'text'                  => $result->textOriginal,
-                'author_display_name'   => $result->authorDisplayName,
-                'author_channel_url'    => $result->authorChannelUrl,
-                'author_channel_id'     => $result->authorChannelId->value
+                'created_at' => $result->publishedAt,
+                'text' => $text,
+                'author_display_name' => $result->authorDisplayName,
+                'author_channel_url' => $result->authorChannelUrl,
+                'author_channel_id' => $result->authorChannelId->value
             ];
-
-        return $fields;
-    }
-
-    private function save($keyword, $stopwords, $results)
-    {
-        // header for csv
-        $header = [
-            'created_at',
-            'text',
-            'author_display_name',
-            'author_channel_url',
-            'author_channel_id'
-        ];
-        $filename = 'results/youtube_'.$keyword."_raw.csv";
-
-        $this->saveToCsvFile($results, $filename, $header);
-        $response = [
-            'success' => true,
-            'path' => asset($filename)
-        ];
-
-        if($stopwords != "")
-        {
-            $results = $this->preprocess($results, $stopwords);
-            $filename = 'results/youtube_'.$keyword."_processed.csv";
-
-            $this->saveToCsvFile($results, $filename, $header);
-            $response['path'] = asset($filename);
         }
 
-        return json_encode($response);
+        return $fields;
     }
 }
