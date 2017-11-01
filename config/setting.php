@@ -8,11 +8,6 @@ return [
         'access_token_secret'   => getenv('TWITTEROAUTH_ACCESS_TOKEN_SECRET')
     ],
 
-    'azure' => [
-        'key1' => getenv('AZURE_KEY_1'),
-        'key2' => getenv('AZURE_KEY_2')
-    ],
-
     'google_map' => [
         'key' => getenv('Google_MAP_API')
     ],

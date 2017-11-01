@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\AzureApiKey;
 use App\Http\Requests\Request;
 use Carbon\Carbon;
 use ErrorException;
@@ -346,13 +347,16 @@ class ApiController extends Controller
         }
         $body_message .= "]}";
 
+        // Azure API key from DB
+        $key = AzureApiKey::where('name', 'key1')->first();
+
         /*Creating a request*/
         $client = new Client(); //GuzzleHttp\Client
         $res = $client->request('POST',
             'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
                 'headers' => [
                     'content-type' => 'application/json',
-                    'Ocp-Apim-Subscription-Key' => env('AZURE_KEY_1')
+                    'Ocp-Apim-Subscription-Key' => $key->key
                 ],
                 'body' => $body_message
             ]);
