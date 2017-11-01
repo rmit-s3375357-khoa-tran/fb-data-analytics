@@ -11,12 +11,12 @@ class AzureApiKeysSeeder extends Seeder
      */
     public function run()
     {
-        \App\AzureApiKey::create([
+        \App\AzureApiKey::firstOrCreate([
             'name' => 'key1',
             'key' => '6fa67a9d8f1645a7991fbe698742272a'
         ]);
 
-        \App\AzureApiKey::create([
+        \App\AzureApiKey::firstOrCreate([
             'name' => 'key2',
             'key' => '4e540d98fb47455ea0f2bd19a3fa1f70'
         ]);

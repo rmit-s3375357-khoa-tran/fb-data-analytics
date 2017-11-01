@@ -51,3 +51,16 @@ Route::post('youtube/api/addCustomUrls', 'YoutubeApiController@addCustomUrls');
 |--------------------------------------------------------------------------
 */
 Route::post('facebook/api/collect', 'FacebookApiController@search');
+
+/*
+|--------------------------------------------------------------------------
+| Azure API Key Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('azure', [
+    'middleware' => 'auth',
+    function () {
+        return view('pages.azure');
+    }
+]);
+Route::post('azure/update', 'AzureApiKeyController@update');
