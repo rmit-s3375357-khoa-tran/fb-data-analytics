@@ -17,9 +17,13 @@
 | General Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return view('pages.home');
-});
+Route::auth();
+Route::get('/', [
+    'middleware' => 'auth',
+    function () {
+        return view('pages.home');
+    }
+]);
 
 Route::get('api/empty/results', 'ApiController@emptyResultsDirectory');
 Route::get('api/analyse/{keyword}/{stopwords}', 'ApiController@analyse');
@@ -37,13 +41,13 @@ Route::post('twitter/api/stream', 'TwitterApiController@stream');
 | Youtube Routes
 |--------------------------------------------------------------------------
 */
-Route::post('youtube/api/search','YoutubeApiController@search');
-Route::post('youtube/api/collect','YoutubeApiController@collect');
-Route::post('youtube/api/addCustomUrls','YoutubeApiController@addCustomUrls');
+Route::post('youtube/api/search', 'YoutubeApiController@search');
+Route::post('youtube/api/collect', 'YoutubeApiController@collect');
+Route::post('youtube/api/addCustomUrls', 'YoutubeApiController@addCustomUrls');
 
 /*
 |--------------------------------------------------------------------------
 | Facebook Routes
 |--------------------------------------------------------------------------
 */
-Route::post('facebook/api/collect','FacebookApiController@search');
+Route::post('facebook/api/collect', 'FacebookApiController@search');
