@@ -99,8 +99,9 @@ class ApiController extends Controller
         }
 
         // process stop words
-        if($request->stopwords != "")
+        if ($request->stopwords != "") {
             $processedData = $this->processStopWords($processedData, $request->stopwords);
+        }
 
         return $processedData;
     }
@@ -165,7 +166,7 @@ class ApiController extends Controller
      */
     private function analyseTweet($results)
     {
-        $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
+        $DatumboxAPI = new DatumboxAPI(config('setting.datum_box.key'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $positiveLocation = array();
         $negativeLocation = array();
@@ -376,7 +377,7 @@ class ApiController extends Controller
     private function getGeo($authorChannelId)
     {
         $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
-            "key=" . env('YOUTUBE_API') .
+            "key=" . config('setting.youtube.key') .
             "&part=id,contentDetails,statistics,snippet" .
             "&id=" . $authorChannelId;
 

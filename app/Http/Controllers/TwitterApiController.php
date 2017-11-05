@@ -11,8 +11,6 @@ class TwitterApiController extends ApiController
 {
     public function collect(Request $request)
     {
-//        dd($request->all());
-
         // keyword has to be set
         if ($request->keyword == "") {
             return json_encode([
