@@ -7,7 +7,6 @@ $(document).ready(function() {
             if (data['sentiment'] == 'positive')
             {
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['location']+"</div></td>"+
@@ -24,7 +23,6 @@ $(document).ready(function() {
             if (data['sentiment'] == 'neutral')
             {
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['location']+"</div></td>"+
@@ -41,7 +39,6 @@ $(document).ready(function() {
             if (data['sentiment'] == 'negative')
             {
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['location']+"</div></td>"+
@@ -117,7 +114,6 @@ $(document).ready(function() {
 });
 
 var start_table = "<table class='table-striped table-responsive'> <thead> <tr>"+
-    "<td></td>"+
     "<td><h4>Time</h4></td> " +
     "<td><h4>Tweet</h4></td>" +
     "<td><h4>User Location</h4></td> " +

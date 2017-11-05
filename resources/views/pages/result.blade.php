@@ -14,6 +14,7 @@
                 neu_yt_sentiment = parseInt("{{ $YTsentiments['neutral']  }}"),
                 twitter_data = JSON.parse('{!! json_encode($results) !!}'),
                 youtube_data = JSON.parse('{!! json_encode($YTresults)!!}');
+        console.log(twitter_data);
     </script>
 
 

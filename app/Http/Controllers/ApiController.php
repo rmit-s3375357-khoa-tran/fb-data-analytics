@@ -34,7 +34,7 @@ class ApiController extends Controller
         $youtubeData = $this->getDataFromCsv($keyword, $type, 'youtube');
 
         // analyse data
-        list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
+        list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->analyseTweet($twitterData);
         list($YTresults, $YTsentiments, $YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
         $posCoordinates = array_merge($TposCoordinates, $YTposCoordinates);
         $negCoordinates = array_merge($TnegCoordinates, $YTnegCoordinates);
@@ -166,43 +166,65 @@ class ApiController extends Controller
      */
     private function analyseTweet($results)
     {
-        $DatumboxAPI = new DatumboxAPI(config('setting.datum_box.key'));
+        $key = 0;
+        $result_count = 0;
+        $datum_keys = array(config('setting.datum_box.key'), config('setting.datum_box.key2'),config('setting.datum_box.key3'));
+        $DatumboxAPI = new DatumboxAPI($datum_keys[$key++]);
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $positiveLocation = array();
         $negativeLocation = array();
         $neutralLocation = array();
+        if ($results == null) {
+            return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+        }
 
         foreach ($results as $index => $result) {
-            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['tweet']));
+            $score = null;
+            $result_count++;
+            if ($result_count%39 == 0) {
+                $DatumboxAPI = new DatumboxAPI($datum_keys[$key++]);
+            }
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
 
+            //incrementing sentiment counter
             if ($message == "negative") {
+                $score = 0;
                 $sentiment_counter['negative']++;
+                $results[$index]['sentiment'] = 'negative';
             } elseif ($message == "positive") {
                 $sentiment_counter['positive']++;
+                $results[$index]['sentiment'] = 'positive';
+                $score = 1;
             } else {
                 $sentiment_counter['neutral']++;
+                $results[$index]['sentiment'] = 'neutral';
+                $score = 0.5;
             }
 
             // Get lat and long by address
-            $address = $result['user_timezone']; // Google HQ
-            if ($address != null) {
-                $prepAddr = str_replace(' ', '+', $address);
-                $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
-                $output = json_decode($geocode);
-                $latitude = $output->results[0]->geometry->location->lat;
-                $longitude = $output->results[0]->geometry->location->lng;
+            $results[$index]['user_location'] = str_replace(
+                array("\r\n", "\n", "\r", "'", "`", '"', "'"),
+                "", $result['user_location']);
 
-                if ($message == "negative") {
-                    array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
-                } elseif ($message == "positive") {
-                    array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
-                } else {
-                    array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
-                }
+            if (isset($result['place_longitude']) and isset($result['place_latitude'])) {
+                $latitude = (float)$result['place_latitude'];
+                $longitude = (float)$result['place_longitude'];
+                $results[$index]['location'] = $latitude.", ".$longitude;
+
+                $this->addLocation($latitude, $longitude,
+                    $score, $positiveLocation, $negativeLocation, $neutralLocation);
+            } elseif ($results[$index]['user_timezone'] || $results[$index]['user_location']) {
+                $results[$index]['location'] = ($results[$index]['user_timezone']? $results[$index]['user_timezone']
+                    : $results[$index]['user_location']);
+                $this->getLonLat($result['user_timezone'],
+                    $score,
+                    $positiveLocation,
+                    $negativeLocation,
+                    $neutralLocation, $results);
             }
         }
 
-        return [$sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+        return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
     /**
@@ -236,19 +258,19 @@ class ApiController extends Controller
             if (isset($results[$index]['place_longitude']) and isset($results[$index]['place_latitude'])) {
                 $latitude = (float)$results[$index]['place_latitude'];
                 $longitude = (float)$results[$index]['place_longitude'];
-                $results[$index]['location'] = $results[$index]['user_location'];
+                $results[$index]['location'] = $latitude.", ".$longitude;
 
                 $this->addLocation($latitude, $longitude,
-                    $result, $positiveLocation, $negativeLocation, $neutralLocation);
-            } else {
-                $results[$index]['location'] = $results[$index]['user_timezone'];
-                $this->getLonLat($results[$index]['user_timezone'],
-                    $result,
+                    $score, $positiveLocation, $negativeLocation, $neutralLocation);
+            } elseif ($results[$index]['user_timezone'] || $results[$index]['user_location']) {
+                $results[$index]['location'] = ($results[$index]['user_timezone']? $results[$index]['user_timezone']
+                    : $results[$index]['user_location']);
+                $this->getLonLat($results[$index]['location'],
+                    $score,
                     $positiveLocation,
                     $negativeLocation,
                     $neutralLocation, $results);
             }
-
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
@@ -280,7 +302,7 @@ class ApiController extends Controller
                 echo("Geo result location: " . $geoResult . "<br>");
             }
             $this->getLonLat($address,
-                $result,
+                $result['score'],
                 $positiveLocation,
                 $negativeLocation,
                 $neutralLocation, $results);
@@ -289,17 +311,19 @@ class ApiController extends Controller
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
-    private function getLonLat($address, $result, &$positiveLocation, &$negativeLocation, &$neutralLocation)
+    private function getLonLat($address, $score, &$positiveLocation, &$negativeLocation, &$neutralLocation)
     {
         if ($address != null) {
             $prepAddr = str_replace(' ', '+', $address);
             $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
             $output = json_decode($geocode);
-            if ($output->results != null) {
-                $latitude = $output->results{0}->geometry->location->lat;
-                $longitude = $output->results{0}->geometry->location->lng;
-                $this->addLocation($latitude, $longitude,
-                    $result, $positiveLocation, $negativeLocation, $neutralLocation);
+            if ($output != null) {
+                if ($output->results != null){
+                    $latitude = $output->results{0}->geometry->location->lat;
+                    $longitude = $output->results{0}->geometry->location->lng;
+                    $this->addLocation($latitude, $longitude,
+                        $score, $positiveLocation, $negativeLocation, $neutralLocation);
+                }
             }
         }
     }
@@ -307,12 +331,11 @@ class ApiController extends Controller
     private function addLocation(
         $latitude,
         $longitude,
-        $result,
+        $score,
         &$positiveLocation,
         &$negativeLocation,
         &$neutralLocation
     ) {
-        $score = $result['score'];
         if ($score < 0.5) {
             array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
         } elseif ($score > 0.5) {
