@@ -36,6 +36,7 @@ class ApiController extends Controller
         // analyse data
         list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
         list($YTresults, $YTsentiments, $YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
+        list($FBresults, $FBsentiments) = $this->FBsentimentAnalysis($facebookData);
         $posCoordinates = array_merge($TposCoordinates, $YTposCoordinates);
         $negCoordinates = array_merge($TnegCoordinates, $YTnegCoordinates);
         $neuCoordinates = array_merge($TneuCoordinates, $YTneuCoordinates);
@@ -45,7 +46,7 @@ class ApiController extends Controller
 
         return view('pages.result', compact('keyword',
             'results', 'sentiments', 'posCoordinates', 'negCoordinates', 'neuCoordinates',
-            'YTsentiments', 'YTresults'));
+            'YTsentiments', 'YTresults', 'FBsentiments', 'FBresults'));
     }
 
     protected function save($request, $results, $header, $origin)
@@ -251,6 +252,21 @@ class ApiController extends Controller
 
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+    }
+
+    private function FBsentimentAnalysis($results)
+    {
+        $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
+        if ($results == null) {
+            return [$results, $sentiment_counter];
+        }
+        print_r($results);
+        $return = $this->azureSendRequest($results);
+        foreach ($return['documents'] as $result) {
+            //Incrementing sentiment counter
+            $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
+        }
+        return [$results, $sentiment_counter];
     }
 
     private function YTsentimentAnalysis($results)

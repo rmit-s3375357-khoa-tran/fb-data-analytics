@@ -26,12 +26,16 @@
                     </div>
                 </div>
             @else
-               <div class="title"> Analysis not available </div>
+               <div class="title"> Twitter analysis not available </div>
             @endif
         </div>
 
         <div id="facebook" class="tab-pane fade in">
-            <h3>Facebook</h3>
+            @if($FBresults)
+                <h3>Facebook</h3>
+            @else
+                <div class="title"> Facebook analysis not available </div>
+            @endif
         </div>
 
         <div id="youtube" class="tab-pane fade in">
@@ -54,7 +58,7 @@
                     </div>
                 </div>
                     @else
-                        <div class="title"> Analysis not available </div>
+                        <div class="title"> Youtube analysis not available </div>
                     @endif
         </div>
     </div>
