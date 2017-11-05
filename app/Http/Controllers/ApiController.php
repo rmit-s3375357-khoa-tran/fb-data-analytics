@@ -41,7 +41,7 @@ class ApiController extends Controller
         $neuCoordinates = array_merge($TneuCoordinates, $YTneuCoordinates);
 
         // remove files after analysing
-        $this->emptyResultsDirectory();
+        //$this->emptyResultsDirectory();
 
         return view('pages.result', compact('keyword',
             'results', 'sentiments', 'posCoordinates', 'negCoordinates', 'neuCoordinates',
@@ -242,7 +242,7 @@ class ApiController extends Controller
                     $result, $positiveLocation, $negativeLocation, $neutralLocation);
             } else {
                 $results[$index]['location'] = $results[$index]['user_timezone'];
-                $this->getLonLat($results[$index]['location'],
+                $this->getLonLat($results[$index]['user_timezone'],
                     $result,
                     $positiveLocation,
                     $negativeLocation,
@@ -268,11 +268,22 @@ class ApiController extends Controller
 
             //Incrementing sentiment counter
             $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
-            $this->getLonLat($results[$result['id'] - 1]['location'],
+
+            // Get lat and long by address
+            $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
+            if ($address != null || $address != "undefined") {
+                $results[$result['id'] - 1]['location'] = $address;
+            }
+            else {
+                // 2. Analyse from text using Geotext
+                $geoResult = shell_exec(' python geotext/geo.py ' . $results[$result['id'] - 1]['text']);
+                echo("Geo result location: " . $geoResult . "<br>");
+            }
+            $this->getLonLat($address,
                 $result,
                 $positiveLocation,
                 $negativeLocation,
-                $neutralLocation);
+                $neutralLocation, $results);
 
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
@@ -363,5 +374,63 @@ class ApiController extends Controller
         $return = json_decode($json, true);
 
         return $return;
+    }
+
+    private function getGeo($authorChannelId)
+    {
+        $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
+            "key=" . config('setting.youtube.key') .
+            "&part=id,contentDetails,statistics,snippet" .
+            "&id=" . $authorChannelId;
+
+        // get response from api and only continue when successful
+        $response = $this->sendRequest($endpoint);
+        if ($response['success'] && isset($response['result'][0])) {
+            // prepare result when successful response
+            $items = $response['result'];
+            foreach ($items as $item) {
+                if (isset($item->snippet->country)) {
+                    return $item->snippet->country;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function sendRequest($endpoint)
+    {
+        $client = new Client();
+        try {
+            $apiResponse = $client->get($endpoint);
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        // in case response failed
+        if ($apiResponse->getStatusCode() != 200) {
+            return [
+                'success' => false,
+                'message' => 'Response failed.'
+            ];
+        }
+
+        // in case of empty response
+        $response = json_decode((string)$apiResponse->getBody());
+        if (!$response) {
+            return [
+                'success' => false,
+                'message' => 'Empty response.'
+            ];
+        }
+
+        // return all items from response
+        return [
+            'success' => true,
+            'result' => $response->items
+        ];
     }
 }

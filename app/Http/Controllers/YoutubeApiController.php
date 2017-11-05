@@ -136,8 +136,7 @@ class YoutubeApiController extends ApiController
                 'text',
                 'author_display_name',
                 'author_channel_url',
-                'author_channel_id',
-                'location'
+                'author_channel_id'
             ];
 
             return $this->save($request, $comments, $header, 'youtube');
@@ -252,46 +251,20 @@ class YoutubeApiController extends ApiController
             $text = str_replace(
                 array("\r\n", "\n", "\r", "'", "`", '"'),
                 '', $result->textOriginal);
+
             $authorDisplayName = str_replace(
                 array("\r\n", "\n", "\r", "'", "`", '"')
                 , " ", $result->authorDisplayName);
-            $address = $this->getGeo($result->authorChannelId->value);
-            if ($address == "undefined") {
-                $address = null;
-            }
 
             $fields = [
                 'created_at' => $result->publishedAt,
                 'text' => $text,
                 'author_display_name' => $authorDisplayName,
                 'author_channel_url' => $result->authorChannelUrl,
-                'author_channel_id' => $result->authorChannelId->value,
-                'location' => $address
+                'author_channel_id' => $result->authorChannelId->value
             ];
         }
 
         return $fields;
-    }
-
-    private function getGeo($authorChannelId)
-    {
-        $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
-            "key=" . config('setting.youtube.key') .
-            "&part=id,contentDetails,statistics,snippet" .
-            "&id=" . $authorChannelId;
-
-        // get response from api and only continue when successful
-        $response = $this->sendRequest($endpoint);
-        if ($response['success'] && isset($response['result'][0])) {
-            // prepare result when successful response
-            $items = $response['result'];
-            foreach ($items as $item) {
-                if (isset($item->snippet->country)) {
-                    return $item->snippet->country;
-                }
-            }
-        }
-
-        return null;
     }
 }
