@@ -50,7 +50,7 @@ Route::post('youtube/api/addCustomUrls', 'YoutubeApiController@addCustomUrls');
 | Facebook Routes
 |--------------------------------------------------------------------------
 */
-Route::post('facebook/api/collect', 'FacebookApiController@search');
+Route::post('facebook/api/collect', 'FacebookApiController@collect');
 
 /*
 |--------------------------------------------------------------------------

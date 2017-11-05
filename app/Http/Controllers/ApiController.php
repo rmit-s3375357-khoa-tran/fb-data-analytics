@@ -26,11 +26,11 @@ class ApiController extends Controller
     public function analyse($keyword, $stopwords)
     {
         // get type depending on if stopwords were set
-        $type = ($stopwords == "null") ? 'raw' : 'processed';
+        $type = ($stopwords == "null") ? '_raw' : '_processed';
 
         // get data for all resources
         $twitterData = $this->getDataFromCsv($keyword, $type, 'twitter');
-        $facebookData = $this->getDataFromCsv($keyword, $type, 'facebook');
+        $facebookData = $this->getDataFromCsv($keyword, '', 'facebook');
         $youtubeData = $this->getDataFromCsv($keyword, $type, 'youtube');
 
         // analyse data
@@ -99,8 +99,9 @@ class ApiController extends Controller
         }
 
         // process stop words
-        if($request->stopwords != "")
+        if ($request->stopwords != "") {
             $processedData = $this->processStopWords($processedData, $request->stopwords);
+        }
 
         return $processedData;
     }
@@ -132,7 +133,7 @@ class ApiController extends Controller
     private function getDataFromCsv($keyword, $type, $source)
     {
         // parse the filename and open file
-        $filename = 'results/' . $source . '_' . $keyword . '_' . $type . '.csv';
+        $filename = 'results/' . $source . '_' . $keyword . $type . '.csv';
         try {
             $file = fopen($filename, 'r');
         } catch (ErrorException $e) {
@@ -165,7 +166,7 @@ class ApiController extends Controller
      */
     private function analyseTweet($results)
     {
-        $DatumboxAPI = new DatumboxAPI(env('DATUM_BOX_API2'));
+        $DatumboxAPI = new DatumboxAPI(config('setting.datum_box.key'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $positiveLocation = array();
         $negativeLocation = array();
@@ -376,7 +377,7 @@ class ApiController extends Controller
     private function getGeo($authorChannelId)
     {
         $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
-            "key=" . env('YOUTUBE_API') .
+            "key=" . config('setting.youtube.key') .
             "&part=id,contentDetails,statistics,snippet" .
             "&id=" . $authorChannelId;
 

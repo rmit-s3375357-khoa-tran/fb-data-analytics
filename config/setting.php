@@ -18,5 +18,10 @@ return [
 
     'youtube' => [
         'key' => getenv('YOUTUBE_API')
+    ],
+
+    'facebook' => [
+        'id' => getenv('FACEBOOK_API_ID'),
+        'secret' => getenv('FACEBOOK_API_SECRET')
     ]
 ];

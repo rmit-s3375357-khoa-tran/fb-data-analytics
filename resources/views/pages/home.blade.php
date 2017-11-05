@@ -12,4 +12,5 @@
     <script src="{{ asset('js/search.js') }}"></script>
     <script src="{{ asset('js/twitter.js') }}"></script>
     <script src="{{ asset('js/youtube.js') }}"></script>
+    <script src="{{ asset('js/facebook.js') }}"></script>
 @endsection

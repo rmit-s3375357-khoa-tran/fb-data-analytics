@@ -3,18 +3,26 @@
         <img class="social-media-logo" src="{{ asset('images/logos/Facebook-Logo-2.png') }}">
     </p>
     <p>
-        <label>Number of Pages</label>
+        <label>Page ID</label>
         <input
-                id="number-of-facebook-pages"
+                id="facebook-page-id"
+                class="text-center"
+                type="text"
+        >
+    </p>
+    <p>
+        <label>Number of Comments</label>
+        <input
+                id="number-of-facebook-comments"
                 class="text-center"
                 type="number"
         >
         <br>
-        <small class="text-gray">By default 3, max 10</small>
+        <small class="text-gray">By default 100</small>
     </p>
     <p>
-        <button id="search-facebook" class="btn btn-primary btn-lg start-searching">
-            Search <i class="fa fa-facebook-official" aria-hidden="true"></i>
+        <button id="collect-facebook" class="btn btn-primary btn-lg start-searching">
+            Collect <i class="fa fa-facebook-official" aria-hidden="true"></i>
         </button>
     </p>
     <p class="alert alert-success" id="facebook-alert-success" style="display:none">
