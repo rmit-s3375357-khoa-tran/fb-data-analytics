@@ -173,26 +173,11 @@ class YoutubeApiController extends ApiController
                         echo("Chanel ID " . $authorChannelId);
                         echo("Chanel URL " . $authorChannelUrl);
                         echo("<hr>");
-                        $testText ="Paris is a great city";
-                        // 2. Analyse from text
-                        //$process = new Process('python geotext/geotext.py '.$textDisplay);
-                        $geoResult = shell_exec(' python geotext/geo.py ' .$textDisplay);
-                        echo("Geo result location: ".$geoResult. "<br>");
 
+                        // 2. Analyse from text using Geotext
+                        $geoResult = shell_exec(' python geotext/geo.py ' . $textDisplay);
+                        echo("Geo result location: " . $geoResult . "<br>");
 
-//                        $item='example';
-//                        $tmp = exec("/Applications/XAMPP/htdocs/fb-data-analytics/public/geotext/geo.py .$item");
-//                        echo ("Geo result location:".$tmp);
-
-
-
-
-
-
-
-                        ### Channel Section ###
-
-                        // To get Geolocation of country
                         // 1. Can get from Chanel ID or textDisplay
                         $channelUrl = "https://www.googleapis.com/youtube/v3/channels?key=" .
                             $youtubeAPIKey . "&part=id,contentDetails,statistics,snippet&id=" . $authorChannelId;
@@ -342,8 +327,6 @@ class YoutubeApiController extends ApiController
                         // /from\s{1}(\w+)/g
 
                         // Install apt
-
-
 
 
                     }
