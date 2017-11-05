@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="23a9d400-0d00-4da7-a516-8fd60ebcf80e" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/composer.phar" afterPath="$PROJECT_DIR$/composer.phar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/ApiController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/ApiController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/js/result/chart.js" afterPath="$PROJECT_DIR$/public/js/result/chart.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/js/result/pie-chart.js" afterPath="$PROJECT_DIR$/public/js/result/pie-chart.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/pages/data.blade.php" afterPath="$PROJECT_DIR$/resources/views/pages/data.blade.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/pages/result.blade.php" afterPath="$PROJECT_DIR$/resources/views/pages/result.blade.php" />
-    </list>
+    <list default="true" id="23a9d400-0d00-4da7-a516-8fd60ebcf80e" name="Default" comment="" />
     <ignored path=".idea/dataSources.local.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -38,8 +30,8 @@
       <file leaf-file-name="ApiController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/Http/Controllers/ApiController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="250">
-              <caret line="48" column="44" selection-start-line="48" selection-start-column="44" selection-end-line="48" selection-end-column="44" />
+            <state relative-caret-position="400">
+              <caret line="54" column="28" selection-start-line="54" selection-start-column="28" selection-end-line="54" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -411,12 +403,12 @@
       <workItem from="1504595432485" duration="206000" />
       <workItem from="1509610599212" duration="28000" />
       <workItem from="1509610656252" duration="177000" />
-      <workItem from="1509888004381" duration="7599000" />
+      <workItem from="1509888004381" duration="7632000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="17191000" />
+    <option name="totallyTimeSpent" value="17224000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-11" y="-11" width="1942" height="1042" extended-state="6" />
@@ -772,8 +764,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Http/Controllers/ApiController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="48" column="44" selection-start-line="48" selection-start-column="44" selection-end-line="48" selection-end-column="44" />
+        <state relative-caret-position="400">
+          <caret line="54" column="28" selection-start-line="54" selection-start-column="28" selection-end-line="54" selection-end-column="28" />
           <folding />
         </state>
       </provider>
