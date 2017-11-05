@@ -16,7 +16,7 @@ except ImportError:
 
 # Variables that contains the user credentials to access Twitter API 
 config = ConfigParser.ConfigParser()
-config.read("../config.ini")
+config.read("config.ini")
 app_id = config.get('FacebookApi', 'FACEBOOK_API_ID')
 app_secret = config.get('FacebookApi', 'FACEBOOK_API_SECRET') 
 access_token = app_id + "|" + app_secret
@@ -133,7 +133,7 @@ def processFacebookPageFeedStatus(status):
 
 
 def scrapeFacebookPageFeedStatus(page_id, access_token, since_date, until_date):
-    with open('../results/{}_facebook_statuses.csv'.format(page_id), 'w') as file:
+    with open('results/{}_facebook_statuses.csv'.format(page_id), 'w') as file:
         w = csv.writer(file)
         w.writerow(["status_id", "status_message", "link_name", "status_type",
                     "status_link", "status_published", "num_reactions",

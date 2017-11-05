@@ -16,7 +16,7 @@ except ImportError:
 
 # Variables that contains the user credentials to access Twitter API 
 config = ConfigParser.ConfigParser()
-config.read("../config.ini")
+config.read("config.ini")
 app_id = config.get('FacebookApi', 'FACEBOOK_API_ID')
 app_secret = config.get('FacebookApi', 'FACEBOOK_API_SECRET') 
 access_token = app_id + "|" + app_secret
@@ -130,7 +130,7 @@ def processFacebookComment(comment, status_id, parent_id=''):
 
 
 def scrapeFacebookPageFeedComments(page_id, access_token):
-    with open('../results/facebook_{}.csv'.format(keyword), 'w') as file:
+    with open('results/facebook_{}.csv'.format(keyword), 'w') as file:
         w = csv.writer(file)
         w.writerow(["comment_id", "status_id", "parent_id", "text",
                     "comment_author", "created_at", "num_reactions",
@@ -147,7 +147,7 @@ def scrapeFacebookPageFeedComments(page_id, access_token):
         print("Scraping {} Comments From Posts: {}\n".format(
             file_id, scrape_starttime))
 
-        with open('../results/{}_facebook_statuses.csv'.format(file_id), 'r') as csvfile:
+        with open('results/{}_facebook_statuses.csv'.format(file_id), 'r') as csvfile:
             reader = csv.DictReader(csvfile)
 
             # Uncomment below line to scrape comments for a specific status_id
