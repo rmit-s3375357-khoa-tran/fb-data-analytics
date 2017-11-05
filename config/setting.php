@@ -13,7 +13,9 @@ return [
     ],
 
     'datum_box' => [
-        'key' => getenv('DATUM_BOX_API')
+        'key' => getenv('DATUM_BOX_API'),
+        'key2' => getenv('DATUM_BOX_API2'),
+        'key3' => getenv('DATUM_BOX_API3')
     ],
 
     'youtube' => [

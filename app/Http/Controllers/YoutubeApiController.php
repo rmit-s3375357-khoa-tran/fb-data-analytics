@@ -252,10 +252,14 @@ class YoutubeApiController extends ApiController
                 array("\r\n", "\n", "\r", "'", "`", '"'),
                 '', $result->textOriginal);
 
+            $authorDisplayName = str_replace(
+                array("\r\n", "\n", "\r", "'", "`", '"')
+                , " ", $result->authorDisplayName);
+
             $fields = [
                 'created_at' => $result->publishedAt,
                 'text' => $text,
-                'author_display_name' => $result->authorDisplayName,
+                'author_display_name' => $authorDisplayName,
                 'author_channel_url' => $result->authorChannelUrl,
                 'author_channel_id' => $result->authorChannelId->value
             ];
