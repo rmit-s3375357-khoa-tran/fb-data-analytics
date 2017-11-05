@@ -242,7 +242,7 @@ class ApiController extends Controller
                     $result, $positiveLocation, $negativeLocation, $neutralLocation);
             } else {
                 $results[$index]['location'] = $results[$index]['user_timezone'];
-                $this->getLonLat($results[$index]['user_timezone'],
+                $this->getLonLat($results[$index]['location'],
                     $result,
                     $positiveLocation,
                     $negativeLocation,
@@ -268,20 +268,11 @@ class ApiController extends Controller
 
             //Incrementing sentiment counter
             $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
-
-            // Get lat and long by address
-            $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
-            $results[$result['id'] - 1]['author_display_name'] = str_replace(
-                array("\r\n", "\n", "\r", "'", "`", '"')
-                , " ", $results[$result['id'] - 1]['author_display_name']);
-            if ($address != null || $address == "undefined") {
-                $results[$result['id'] - 1]['location'] = $address;
-            }
-            $this->getLonLat($address,
+            $this->getLonLat($results[$result['id'] - 1]['location'],
                 $result,
                 $positiveLocation,
                 $negativeLocation,
-                $neutralLocation, $results);
+                $neutralLocation);
 
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
@@ -372,63 +363,5 @@ class ApiController extends Controller
         $return = json_decode($json, true);
 
         return $return;
-    }
-
-    private function getGeo($authorChannelId)
-    {
-        $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
-            "key=" . config('setting.youtube.key') .
-            "&part=id,contentDetails,statistics,snippet" .
-            "&id=" . $authorChannelId;
-
-        // get response from api and only continue when successful
-        $response = $this->sendRequest($endpoint);
-        if ($response['success'] && isset($response['result'][0])) {
-            // prepare result when successful response
-            $items = $response['result'];
-            foreach ($items as $item) {
-                if (isset($item->snippet->country)) {
-                    return $item->snippet->country;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private function sendRequest($endpoint)
-    {
-        $client = new Client();
-        try {
-            $apiResponse = $client->get($endpoint);
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
-        }
-
-        // in case response failed
-        if ($apiResponse->getStatusCode() != 200) {
-            return [
-                'success' => false,
-                'message' => 'Response failed.'
-            ];
-        }
-
-        // in case of empty response
-        $response = json_decode((string)$apiResponse->getBody());
-        if (!$response) {
-            return [
-                'success' => false,
-                'message' => 'Empty response.'
-            ];
-        }
-
-        // return all items from response
-        return [
-            'success' => true,
-            'result' => $response->items
-        ];
     }
 }
