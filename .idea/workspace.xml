@@ -2,81 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="23a9d400-0d00-4da7-a516-8fd60ebcf80e" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/blue.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/cluster/negative1.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/cluster/neutral1.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/cluster/positive1.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/green.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/logos/Facebook-Logo-2.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/logos/GrabSentiment.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/logos/logo_twitter.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/logos/youtube_2017_logo.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/m1.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/m2.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/m3.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/pins/neg_pin.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/pins/neutral_pin.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/pins/pos_pin.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/images/red.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/tweepy" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/AzureApiKey.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/Http/Controllers/ApiController.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/Http/Controllers/AzureApiKeyController.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/Http/Controllers/DatumboxAPI.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/Http/Controllers/HomeController.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/Http/Controllers/YoutubeApiController.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/Http/Requests/AzureKeyRequest.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/database/migrations/2017_08_25_085801_create_jobs_table.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/database/migrations/2017_11_01_111309_create_azure_api_keys_table.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/database/seeds/AzureApiKeysSeeder.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/config.ini" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/css/bootstrap.min.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/css/style.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/result/chart-markerclusterer.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/result/chart.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/result/map.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/result/pie-chart.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/result/view-data.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/search.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/twitter.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/js/youtube.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/auth/emails/password.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/auth/login.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/auth/passwords/email.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/auth/passwords/reset.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/auth/register.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/results/facebook.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/results/results.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/results/youtube.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/search/facebook.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/search/search.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/search/twitter.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/components/search/youtube.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/home.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/pages/azure.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/pages/data.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/pages/home.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/pages/master.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/views/pages/result.blade.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tweepyJSON.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/bsda.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/public/images/round-blue-bigdata.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/views/master.blade.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/views/search.blade.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/views/twitter.blade.php" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/TwitterApiController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/TwitterApiController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/routes.php" afterPath="$PROJECT_DIR$/app/Http/routes.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/composer.json" afterPath="$PROJECT_DIR$/composer.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/composer.lock" afterPath="$PROJECT_DIR$/composer.lock" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/filesystems.php" afterPath="$PROJECT_DIR$/config/filesystems.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/setting.php" afterPath="$PROJECT_DIR$/config/setting.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/database/seeds/DatabaseSeeder.php" afterPath="$PROJECT_DIR$/database/seeds/DatabaseSeeder.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/welcome.blade.php" afterPath="$PROJECT_DIR$/resources/views/welcome.blade.php" />
     </list>
     <ignored path=".idea/dataSources.local.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -186,7 +112,6 @@
       <pane id="Scope">
         <subPane subId="Project Files" />
       </pane>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -205,8 +130,23 @@
               <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fb-data-analytics" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fb-data-analytics" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="database" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -257,18 +197,19 @@
       <workItem from="1504595432485" duration="206000" />
       <workItem from="1509610599212" duration="28000" />
       <workItem from="1509610656252" duration="177000" />
+      <workItem from="1509901268501" duration="48000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9592000" />
+    <option name="totallyTimeSpent" value="9640000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-11" y="-11" width="1942" height="1042" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Gulp" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34270272" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34864864" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="DB Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="DB Execution Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
