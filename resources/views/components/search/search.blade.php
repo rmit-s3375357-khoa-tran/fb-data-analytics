@@ -44,7 +44,7 @@
             @include('components.search.youtube')
         </div>
         <div class="text-right">
-            <a id="analyse" class="btn btn-primary btn-lg">
+            <a id="analyse" class="btn btn-success btn-lg">
                 <i class="fa fa-magic" aria-hidden="true"></i> Analyse
             </a>
         </div>
