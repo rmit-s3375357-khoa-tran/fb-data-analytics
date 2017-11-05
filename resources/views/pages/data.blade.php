@@ -32,7 +32,23 @@
 
         <div id="facebook" class="tab-pane fade in">
             @if($FBresults)
-                <h3>Facebook</h3>
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <h3>Facebook</h3>
+                        <p>Select sentiment to view data</p>
+                        <button id="facebook_pos_button" class="btn btn-primary">Positive sentiments</button>
+                        <button id="facebook_neg_button" class="btn btn-danger">Negative sentiments</button>
+                        <button id="facebook_neu_button" class="btn btn-default">Neutral sentiments</button>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+                <div class="panel-group" id="accordion">
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div id="facebookData"></div>
+                        </div>
+                    </div>
+                </div>
             @else
                 <div class="title"> Facebook analysis not available </div>
             @endif
