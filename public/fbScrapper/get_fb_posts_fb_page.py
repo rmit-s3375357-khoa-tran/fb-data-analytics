@@ -1,11 +1,12 @@
 # modified from https://github.com/minimaxir/facebook-page-post-scraper
 
+#!/usr/bin/env python3
 import json
 import datetime
 import csv
 import time
 
-import configparser
+import ConfigParser
 import sys
 
 try:
@@ -14,8 +15,8 @@ except ImportError:
     from urllib2 import urlopen, Request
 
 # Variables that contains the user credentials to access Twitter API 
-config = configparser.ConfigParser()
-config.read("config.ini")
+config = ConfigParser.ConfigParser()
+config.read("../config.ini")
 app_id = config.get('FacebookApi', 'FACEBOOK_API_ID')
 app_secret = config.get('FacebookApi', 'FACEBOOK_API_SECRET') 
 access_token = app_id + "|" + app_secret

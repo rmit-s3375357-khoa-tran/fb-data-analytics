@@ -1,11 +1,12 @@
 # modified from https://github.com/minimaxir/facebook-page-post-scraper
 
+#!/usr/bin/env python3
 import json
 import datetime
 import csv
 import time
 
-import configparser
+import ConfigParser
 import sys
 
 try:
@@ -14,15 +15,16 @@ except ImportError:
     from urllib2 import urlopen, Request
 
 # Variables that contains the user credentials to access Twitter API 
-config = configparser.ConfigParser()
-config.read("config.ini")
+config = ConfigParser.ConfigParser()
+config.read("../config.ini")
 app_id = config.get('FacebookApi', 'FACEBOOK_API_ID')
 app_secret = config.get('FacebookApi', 'FACEBOOK_API_SECRET') 
 access_token = app_id + "|" + app_secret
 
 # Vars passed in command line
 file_id = sys.argv[1] or "RMITuniversity"
-count = sys.argv[2] or 100
+limit = int(sys.argv[2]) or 100
+keyword = sys.argv[3] or "RMIT"
 
 def request_until_succeed(url):
     req = Request(url)
@@ -128,7 +130,7 @@ def processFacebookComment(comment, status_id, parent_id=''):
 
 
 def scrapeFacebookPageFeedComments(page_id, access_token):
-    with open('../results/facebook_{}.csv'.format(file_id), 'w') as file:
+    with open('../results/facebook_{}.csv'.format(keyword), 'w') as file:
         w = csv.writer(file)
         w.writerow(["comment_id", "status_id", "parent_id", "text",
                     "comment_author", "created_at", "num_reactions",
@@ -205,10 +207,10 @@ def scrapeFacebookPageFeedComments(page_id, access_token):
                                                sub_reactions_data + (num_sub_special,))
 
                                     num_processed += 1
-                                    if num_processed % 100 == 0:
-                                        print("{} Comments Processed: {}".format(
-                                            num_processed,
-                                            datetime.datetime.now()))
+                                    if num_processed == limit:
+                                        print("\nDone!\n{} Comments Processed in {}".format(
+                                            num_processed, datetime.datetime.now() - scrape_starttime))
+                                        exit()
 
                                 if 'paging' in sub_comments:
                                     if 'next' in sub_comments['paging']:
@@ -219,11 +221,12 @@ def scrapeFacebookPageFeedComments(page_id, access_token):
                                 else:
                                     has_next_subpage = False
 
-                        # output progress occasionally to make sure code is not
-                        # stalling
+                        # output progress occasionally to make sure code is not stalling
                         num_processed += 1
-                        if num_processed == count:
-                            return True
+                        if num_processed == limit:
+                            print("\nDone!\n{} Comments Processed in {}".format(
+                                num_processed, datetime.datetime.now() - scrape_starttime))
+                            exit()
 
                     if 'paging' in comments:
                         if 'next' in comments['paging']:
