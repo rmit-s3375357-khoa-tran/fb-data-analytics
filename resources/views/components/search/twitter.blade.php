@@ -2,16 +2,18 @@
     <p>
         <img class="social-media-logo" src="{{ asset('images/logos/logo_twitter.png') }}">
     </p>
-    <p>
-        <label>Number of Tweets</label>
-        <input
-                id="number-of-tweets"
-                class="text-center"
-                type="number"
-        >
-        <br>
-        <small class="text-gray">By default 100</small><br>
-    </p>
+    <div class="search-field">
+        <p>
+            <label>Number of Tweets</label>
+            <input
+                    id="number-of-tweets"
+                    class="text-center"
+                    type="number"
+            >
+            <br>
+            <small class="text-gray">By default 100</small><br>
+        </p>
+    </div>
     <p>
         <div>
             <button id="stream-twitter" class="btn btn-primary btn-lg start-searching">
