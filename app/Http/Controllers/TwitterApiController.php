@@ -136,11 +136,14 @@ class TwitterApiController extends ApiController
             $text = str_replace(
                 array("\r\n", "\n", "\r", "'", "`", '"'),
                 "", $result->text);
+            $user_location= str_replace(
+                array("\r\n", "\n", "\r", "'", "`", '"'),
+                "", $result->user->location);
 
             $fields = [
                 'created_at' => $result->created_at,
                 'text' => $text,
-                'user_location' => $result->user->location,
+                'user_location' => $user_location,
                 'user_timezone' => $result->user->time_zone,
                 'place_longitude' => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][0] : null,
                 'place_latitude' => isset($result->place) ? $result->place->bounding_box->coordinates[0][0][1] : null,

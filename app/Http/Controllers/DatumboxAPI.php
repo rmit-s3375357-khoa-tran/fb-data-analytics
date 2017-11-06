@@ -20,7 +20,7 @@ class DatumboxAPI {
      * @return DatumboxAPI
      */
     public function __construct($api_key) {
-        $this->api_key=$api_key;
+        $this->api_key = $api_key;
     }
 
     /**
@@ -32,7 +32,9 @@ class DatumboxAPI {
      * @return string $jsonreply
      */
     protected function CallWebService($api_method,$POSTparameters) {
-        $POSTparameters['api_key']=$this->api_key;
+        $POSTparameters['api_key']= $this->api_key;
+
+//        $mh = curl_multi_init();
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'http://api.datumbox.com/'.self::version.'/'.$api_method.'.json');
@@ -71,23 +73,6 @@ class DatumboxAPI {
     }
 
     /**
-     * Performs Sentiment Analysis.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "positive", "negative" or "neutral" on success and false on fail.
-     */
-    public function SentimentAnalysis($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('SentimentAnalysis',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
      * Performs Sentiment Analysis on Twitter.
      *
      * @param string $text The text of the tweet that we evaluate.
@@ -104,214 +89,69 @@ class DatumboxAPI {
         return $this->ParseReply($jsonreply);
     }
 
-    /**
-     * Performs Subjectivity Analysis.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false. It returns "objective" or "subjective" on success and false on fail.
-     */
-    public function SubjectivityAnalysis($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('SubjectivityAnalysis',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
 
     /**
-     * Performs Topic Classification.
+     * Asynchronous way of performing Sentiment Analysis on Twitter.
      *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
+     * @param string $data The results extracted from csv file that we evaluate.
      *
-     * @return string|false. It returns "Arts", "Business & Economy", "Computers & Technology", "Health", "Home & Domestic Life", "News", "Recreation & Activities", "Reference & Education", "Science", "Shopping", "Society", "Sports" on success and false on fail.
+     * @return string|false It returns "positive", "negative" or "neutral" on success and false on fail.
      */
-    public function TopicClassification($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
+    function multiRequest($data, $options = array()) {
+        // array of curl handles
+        $curly = array();
+        // data to be returned
+        $result = array();
 
-        $jsonreply=$this->CallWebService('TopicClassification',$parameters);
+        // multi handle
+        $mh = curl_multi_init();
 
-        return $this->ParseReply($jsonreply);
+        // loop through $data and create curl handles
+        // then add them to the multi-handle
+        foreach ($data as $id => $d) {
+
+            $curly[$id] = curl_init();
+
+            curl_setopt($curly[$id], CURLOPT_URL,            'http://api.datumbox.com/'.self::version.'/TwitterSentimentAnalysis.json');
+            curl_setopt($curly[$id], CURLOPT_HEADER,         0);
+            curl_setopt($curly[$id], CURLOPT_RETURNTRANSFER, 1);
+
+            // post?
+            $POSTparameters['text'] = str_replace('@', "", $d['text']);
+            $POSTparameters['api_key']=$this->api_key;
+            if (is_array($d)) {
+                if (!empty($d['text'])) {
+                    curl_setopt($curly[$id], CURLOPT_POST,       1);
+                    curl_setopt($curly[$id], CURLOPT_POSTFIELDS, $POSTparameters);
+                }
+            }
+
+            // extra options?
+            if (!empty($options)) {
+                curl_setopt_array($curly[$id], $options);
+            }
+
+            curl_multi_add_handle($mh, $curly[$id]);
+        }
+
+        // execute the handles
+        $running = null;
+        do {
+            curl_multi_exec($mh, $running);
+        } while($running > 0);
+
+
+        // get content and remove handles
+        foreach($curly as $id => $c) {
+            $result[$id] = $this->ParseReply(curl_multi_getcontent($c));
+            print_r(curl_multi_getcontent($c));
+            curl_multi_remove_handle($mh, $c);
+        }
+
+        // all done
+        curl_multi_close($mh);
+
+        return $result;
     }
-
-    /**
-     * Performs Spam Detection.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "spam" or "nospam" on success and false on fail.
-     */
-    public function SpamDetection($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('SpamDetection',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Adult Content Detection.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "adult" or "noadult" on success and false on fail.
-     */
-    public function AdultContentDetection($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('AdultContentDetection',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Readability Assessment.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "basic", "intermediate" or "advanced" on success and false on fail.
-     */
-    public function ReadabilityAssessment($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('ReadabilityAssessment',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Language Detection.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns the ISO639-1 two-letter language code (http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) on success and false on fail.
-     */
-    public function LanguageDetection($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('LanguageDetection',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Commercial Detection.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "commercial" or "noncommercial" on success and false on fail.
-     */
-    public function CommercialDetection($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('CommercialDetection',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Educational Detection.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "educational" or "noneducational" on success and false on fail.
-     */
-    public function EducationalDetection($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('EducationalDetection',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Gender Detection.
-     *
-     * @param string $text The clear text (no HTML tags) that we evaluate.
-     *
-     * @return string|false It returns "male" or "female" on success and false on fail.
-     */
-    public function GenderDetection($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('GenderDetection',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Text Extraction. It extracts the important information (clear text) from a given webpage.
-     *
-     * @param string $text The HTML of the webpage.
-     *
-     * @return string|false It returns the clear text of the document on success and false on fail.
-     */
-    public function TextExtraction($text) {
-        $parameters=array(
-            'text'=>$text,
-        );
-
-        $jsonreply=$this->CallWebService('TextExtraction',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Performs Keyword Extraction. It extracts the keywords and keywords combinations from a text.
-     *
-     * @param string $text The clear text (no HTML tags) that we analyze.
-     * @param integer $n It is a number from 1 to 5 which denotes the number of Keyword combinations that we want to get.
-     *
-     * @return array|false It returns an array with the keywords of the document on success and false on fail.
-     */
-    public function KeywordExtraction($text,$n) {
-        $parameters=array(
-            'text'=>$text,
-            'n'=>$n,
-        );
-
-        $jsonreply=$this->CallWebService('KeywordExtraction',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-    /**
-     * Evaluates the Document Similarity between 2 documents.
-     *
-     * @param string $original The first clear text (no HTML tags) that we compare.
-     * @param string $copy The second clear text (no HTML tags) that we compare.
-     *
-     * @return array|false It returns an array with similarity metrics for the two documents on success and false on fail.
-     */
-    public function DocumentSimilarity($original,$copy) {
-        $parameters=array(
-            'original'=>$original,
-            'copy'=>$copy,
-        );
-
-        $jsonreply=$this->CallWebService('DocumentSimilarity',$parameters);
-
-        return $this->ParseReply($jsonreply);
-    }
-
-
 }
 

@@ -167,27 +167,21 @@ class ApiController extends Controller
      */
     private function analyseTweet($results)
     {
-        $key = 0;
-        $result_count = 0;
-        $datum_keys = array(config('setting.datum_box.key'), config('setting.datum_box.key2'),config('setting.datum_box.key3'));
-        $DatumboxAPI = new DatumboxAPI($datum_keys[$key++]);
+        $DatumboxAPI = new DatumboxAPI(config('setting.datum_box.key'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $positiveLocation = array();
-        $negativeLocation = array();
-        $neutralLocation = array();
+        $positiveLocation = $negativeLocation = $neutralLocation= array();
+
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
+        $messages = $DatumboxAPI->multiRequest($results);
         foreach ($results as $index => $result) {
             $score = null;
-            $result_count++;
-            if ($result_count%39 == 0) {
-                $DatumboxAPI = new DatumboxAPI($datum_keys[$key++]);
-            }
-            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
+            //$message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
 
             //incrementing sentiment counter
+            $message = $messages[$index];
             if ($message == "negative") {
                 $score = 0;
                 $sentiment_counter['negative']++;
@@ -196,23 +190,19 @@ class ApiController extends Controller
                 $sentiment_counter['positive']++;
                 $results[$index]['sentiment'] = 'positive';
                 $score = 1;
-            } else {
+            } elseif ($message == "neutral") {
                 $sentiment_counter['neutral']++;
                 $results[$index]['sentiment'] = 'neutral';
                 $score = 0.5;
             }
 
             // Get lat and long by address
-            $results[$index]['user_location'] = str_replace(
-                array("\r\n", "\n", "\r", "'", "`", '"', "'"),
-                "", $result['user_location']);
-
             if (isset($result['place_longitude']) and isset($result['place_latitude'])) {
                 $latitude = (float)$result['place_latitude'];
                 $longitude = (float)$result['place_longitude'];
                 $results[$index]['location'] = $latitude.", ".$longitude;
 
-                $this->addLocation($latitude, $longitude,
+                $this->addLocation(array("lat" => $latitude, "lng" => $longitude),
                     $score, $positiveLocation, $negativeLocation, $neutralLocation);
             } elseif ($results[$index]['user_timezone'] || $results[$index]['user_location']) {
                 $results[$index]['location'] = ($results[$index]['user_timezone']? $results[$index]['user_timezone']
@@ -237,9 +227,8 @@ class ApiController extends Controller
     private function sentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $positiveLocation = array();
-        $negativeLocation = array();
-        $neutralLocation = array();
+        $positiveLocation = $negativeLocation = $neutralLocation= array();
+
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
@@ -253,15 +242,12 @@ class ApiController extends Controller
 
             // Get lat and long by address
             $index = $result['id'] - 1;
-            $results[$index]['user_location'] = str_replace(
-                array("\r\n", "\n", "\r", "'", "`", '"'),
-                "", $results[$index]['user_location']);
             if (isset($results[$index]['place_longitude']) and isset($results[$index]['place_latitude'])) {
                 $latitude = (float)$results[$index]['place_latitude'];
                 $longitude = (float)$results[$index]['place_longitude'];
                 $results[$index]['location'] = $latitude.", ".$longitude;
 
-                $this->addLocation($latitude, $longitude,
+                $this->addLocation(array("lat" => $latitude, "lng" => $longitude),
                     $score, $positiveLocation, $negativeLocation, $neutralLocation);
             } elseif ($results[$index]['user_timezone'] || $results[$index]['user_location']) {
                 $results[$index]['location'] = ($results[$index]['user_timezone']? $results[$index]['user_timezone']
@@ -294,9 +280,8 @@ class ApiController extends Controller
     private function YTsentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $positiveLocation = array();
-        $negativeLocation = array();
-        $neutralLocation = array();
+        $positiveLocation = $negativeLocation = $neutralLocation= array();
+
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
@@ -314,7 +299,8 @@ class ApiController extends Controller
             }
             else {
                 // 2. Analyse from text using Geotext
-                $geoResult = shell_exec(' python geotext/geo.py ' . $results[$result['id'] - 1]['text']);
+                $text = $results[$result['id'] - 1]['text'];
+                $geoResult = shell_exec(' python '.public_path().'/geotext/geo.py "'.$text.'"');
                 echo("Geo result location: " . $geoResult . "<br>");
             }
             $this->getLonLat($address,
@@ -337,7 +323,7 @@ class ApiController extends Controller
                 if ($output->results != null){
                     $latitude = $output->results{0}->geometry->location->lat;
                     $longitude = $output->results{0}->geometry->location->lng;
-                    $this->addLocation($latitude, $longitude,
+                    $this->addLocation(array("lat" => $latitude, "lng" => $longitude),
                         $score, $positiveLocation, $negativeLocation, $neutralLocation);
                 }
             }
@@ -345,19 +331,18 @@ class ApiController extends Controller
     }
 
     private function addLocation(
-        $latitude,
-        $longitude,
+        $coord,
         $score,
         &$positiveLocation,
         &$negativeLocation,
         &$neutralLocation
     ) {
         if ($score < 0.5) {
-            array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
+            array_push($negativeLocation, $coord);
         } elseif ($score > 0.5) {
-            array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
+            array_push($positiveLocation, $coord);
         } elseif ($score == 0.5) {
-            array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
+            array_push($neutralLocation, $coord);
         }
     }
 
