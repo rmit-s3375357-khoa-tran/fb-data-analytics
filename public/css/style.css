@@ -54,3 +54,7 @@ ul.nav.nav-tabs {
     background-color: #313035;
     color:white;
 }
+
+.search-field {
+    min-height: 100px;
+}

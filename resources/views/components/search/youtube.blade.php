@@ -2,16 +2,18 @@
     <p>
         <img class="social-media-logo" src="{{ asset('images/logos/youtube_2017_logo.png') }}">
     </p>
-    <p>
-        <label>Number of Videos</label>
-        <input
-                id="number-of-youtube-videos"
-                class="text-center"
-                type="number"
-        >
-        <br>
-        <small class="text-gray">By default 3, max 10</small>
-    </p>
+    <div class="search-field">
+        <p>
+            <label>Number of Videos</label>
+            <input
+                    id="number-of-youtube-videos"
+                    class="text-center"
+                    type="number"
+            >
+            <br>
+            <small class="text-gray">By default 3, max 10</small>
+        </p>
+    </div>
     <p>
         <button id="search-youtube" class="btn btn-primary btn-lg start-searching">
             Search <i class="fa fa-youtube" aria-hidden="true"></i>
