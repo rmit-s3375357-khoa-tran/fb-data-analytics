@@ -36,12 +36,12 @@ $(document).ready(function()
 
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
-                    $('#analyse').attr('href', url);
+                    $('#analyse').attr('href', url).attr('data-ready', true);
                 }
                 else
                 {
                     $('#stream-twitter')
-                        .html('Collect <i class="fa fa-twitter" aria-hidden="true"></i>')
+                        .html('Stream <i class="fa fa-twitter" aria-hidden="true"></i>')
                         .hide().delay(30000).fadeIn();
                     $('#collect-twitter').delay(30000).fadeIn();
                     $('#twitter-error-message').text(res['message']);
@@ -87,7 +87,7 @@ $(document).ready(function()
 
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
-                    $('#analyse').attr('href', url);
+                    $('#analyse').attr('href', url).attr('data-ready', true);
                 }
                 else
                 {

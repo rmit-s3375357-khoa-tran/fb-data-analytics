@@ -16,4 +16,11 @@ $(document).ready(function()
     $(".check-all").click(function () {
         $("input:checkbox").prop('checked', $(this).prop("checked"));
     });
+
+    $('#analyse').click(function(){
+        var ready = $(this).attr('data-ready');
+        if(ready) {
+            $(this).html('<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Analysing...');
+        }
+    });
 });

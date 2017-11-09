@@ -35,7 +35,7 @@ $(document).ready(function()
 
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
-                    $('#analyse').attr('href', url);
+                    $('#analyse').attr('href', url).attr('data-ready', true);
                 }
                 else
                 {
