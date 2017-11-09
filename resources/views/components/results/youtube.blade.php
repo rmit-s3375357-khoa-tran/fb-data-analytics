@@ -45,6 +45,12 @@
                 </div>
             @endfor
         </div>
+        <div id="youtube-no-result" class="row" hidden>
+            <h4 class="text-uppercase text-gray text-center">
+                No video found, please enter your own url <br>
+                or <a href="{{ route('reset') }}">reset</a> your search and try again.
+            </h4>
+        </div>
         <div id="youtube-url-group" class="row">
             <div class="col-xs-12">
                 <span class="text-uppercase text-large">Add Your Own URLs</span>

@@ -22,6 +22,8 @@ class ApiController extends Controller
     {
         $files = Storage::files('results');
         Storage::delete($files);
+
+        return redirect(route('home'));
     }
 
     /**

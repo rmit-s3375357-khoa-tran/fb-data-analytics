@@ -32,9 +32,9 @@
             <small class="text-gray">By default set to a month ago</small>
         </div>
         <div class="text-right">
-            <button id="reset-all" class="btn btn-default btn-lg">
+            <a href="{{ route('reset') }}" class="btn btn-default btn-lg">
                 <i class="fa fa-refresh" aria-hidden="true"></i> Reset All
-            </button>
+            </a>
         </div>
     </div>
     <div class="container">

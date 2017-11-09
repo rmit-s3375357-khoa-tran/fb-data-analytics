@@ -70,8 +70,8 @@ class YoutubeApiController extends ApiController
             ]);
         } else {
             return json_encode([
-                'success' => false,
-                'message' => "No video found, please reset your search and try again."
+                'success' => true,
+                'message' => "NoVideoFound"
             ]);
         }
     }
