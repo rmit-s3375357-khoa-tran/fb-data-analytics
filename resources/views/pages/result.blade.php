@@ -12,8 +12,12 @@
                 pos_yt_sentiment = parseInt("{{$YTsentiments['positive']}}"),
                 neg_yt_sentiment = parseInt("{{ $YTsentiments['negative']  }}"),
                 neu_yt_sentiment = parseInt("{{ $YTsentiments['neutral']  }}"),
+                pos_fb_sentiment = parseInt("{{$FBsentiments['positive']}}"),
+                neg_fb_sentiment = parseInt("{{ $FBsentiments['negative']  }}"),
+                neu_fb_sentiment = parseInt("{{ $FBsentiments['neutral']  }}"),
                 twitter_data = JSON.parse('{!! json_encode($results) !!}'),
-                youtube_data = JSON.parse('{!! json_encode($YTresults)!!}');
+                youtube_data = JSON.parse('{!! json_encode($YTresults)!!}'),
+                facebook_data = JSON.parse('{!! json_encode($FBresults)!!}');
     </script>
 
 

@@ -36,16 +36,22 @@ class ApiController extends Controller
         // analyse data
         list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
         list($YTresults, $YTsentiments, $YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
+        list($FBresults, $FBsentiments) = $this->FBsentimentAnalysis($facebookData);
+
+        if ($results == false){
+            $azure_errors = "Azure keys are invalid. Please enter new API keys.";
+            return view('pages.azure', compact('azure_errors'));
+        }
         $posCoordinates = array_merge($TposCoordinates, $YTposCoordinates);
         $negCoordinates = array_merge($TnegCoordinates, $YTnegCoordinates);
         $neuCoordinates = array_merge($TneuCoordinates, $YTneuCoordinates);
 
         // remove files after analysing
-        $this->emptyResultsDirectory();
+        //$this->emptyResultsDirectory();
 
         return view('pages.result', compact('keyword',
             'results', 'sentiments', 'posCoordinates', 'negCoordinates', 'neuCoordinates',
-            'YTsentiments', 'YTresults'));
+            'YTsentiments', 'YTresults', 'FBsentiments', 'FBresults'));
     }
 
     protected function save($request, $results, $header, $origin)
@@ -168,41 +174,59 @@ class ApiController extends Controller
     {
         $DatumboxAPI = new DatumboxAPI(config('setting.datum_box.key'));
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $positiveLocation = array();
-        $negativeLocation = array();
-        $neutralLocation = array();
+        $positiveLocation = $negativeLocation = $neutralLocation= array();
 
+        if ($results == null) {
+            return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+        }
+
+        //$messages = $DatumboxAPI->multiRequest(0, $results);
+//        if ($messages == false) {
+//            return $this->sentimentAnalysis($results);
+//        }
         foreach ($results as $index => $result) {
-            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['tweet']));
+            $score = null;
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
 
+            //incrementing sentiment counter
+//            $message = null;
+//            if(isset($messages[$index])){
+//                $message = $messages[$index];
+//            }
             if ($message == "negative") {
+                $score = 0;
                 $sentiment_counter['negative']++;
+                $results[$index]['sentiment'] = 'negative';
             } elseif ($message == "positive") {
                 $sentiment_counter['positive']++;
-            } else {
+                $results[$index]['sentiment'] = 'positive';
+                $score = 1;
+            } elseif ($message == "neutral") {
                 $sentiment_counter['neutral']++;
+                $results[$index]['sentiment'] = 'neutral';
+                $score = 0.5;
             }
 
             // Get lat and long by address
-            $address = $result['user_timezone']; // Google HQ
-            if ($address != null) {
-                $prepAddr = str_replace(' ', '+', $address);
-                $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
-                $output = json_decode($geocode);
-                $latitude = $output->results[0]->geometry->location->lat;
-                $longitude = $output->results[0]->geometry->location->lng;
+            if (isset($result['place_longitude']) and isset($result['place_latitude'])) {
+                $latitude = (float)$result['place_latitude'];
+                $longitude = (float)$result['place_longitude'];
+                $results[$index]['location'] = $latitude.", ".$longitude;
 
-                if ($message == "negative") {
-                    array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
-                } elseif ($message == "positive") {
-                    array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
-                } else {
-                    array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
-                }
+                $this->addLocation(array("lat" => $latitude, "lng" => $longitude),
+                    $score, $positiveLocation, $negativeLocation, $neutralLocation);
+            } elseif ($results[$index]['user_timezone'] || $results[$index]['user_location']) {
+                $results[$index]['location'] = ($results[$index]['user_timezone']? $results[$index]['user_timezone']
+                    : $results[$index]['user_location']);
+                $this->getLonLat($result['user_timezone'],
+                    $score,
+                    $positiveLocation,
+                    $negativeLocation,
+                    $neutralLocation, $results);
             }
         }
 
-        return [$sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+        return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
     /**
@@ -216,12 +240,16 @@ class ApiController extends Controller
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $positiveLocation = array();
         $negativeLocation = array();
-        $neutralLocation = array();
+        $neutralLocation= array();
+
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
         $return = $this->azureSendRequest($results);
+        if ($return == false){
+            return false;
+        }
 
         foreach ($return['documents'] as $result) {
             $score = $result['score'];
@@ -230,27 +258,45 @@ class ApiController extends Controller
 
             // Get lat and long by address
             $index = $result['id'] - 1;
-            $results[$index]['user_location'] = str_replace(
-                array("\r\n", "\n", "\r", "'", "`", '"'),
-                "", $results[$index]['user_location']);
             if (isset($results[$index]['place_longitude']) and isset($results[$index]['place_latitude'])) {
                 $latitude = (float)$results[$index]['place_latitude'];
                 $longitude = (float)$results[$index]['place_longitude'];
-                $results[$index]['location'] = $results[$index]['user_location'];
+                $results[$index]['location'] = $latitude.", ".$longitude;
 
-                $this->addLocation($latitude, $longitude,
-                    $result, $positiveLocation, $negativeLocation, $neutralLocation);
-            } else {
-                $results[$index]['location'] = $results[$index]['user_timezone'];
-                $this->getLonLat($results[$index]['user_timezone'],
-                    $result,
+                $this->addLocation(array("lat" => $latitude, "lng" => $longitude),
+                    $score, $positiveLocation, $negativeLocation, $neutralLocation);
+            } elseif ($results[$index]['user_timezone'] || $results[$index]['user_location']) {
+                $results[$index]['location'] = ($results[$index]['user_timezone']? $results[$index]['user_timezone']
+                    : $results[$index]['user_location']);
+                $this->getLonLat($results[$index]['location'],
+                    $score,
                     $positiveLocation,
                     $negativeLocation,
-                    $neutralLocation, $results);
+                    $neutralLocation);
             }
-
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
+    }
+
+    private function FBsentimentAnalysis($results)
+    {
+        $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
+        if ($results == null) {
+            return [$results, $sentiment_counter];
+        }
+        //print_r($results);
+        $return = $this->azureSendRequest($results);
+        if ($return == false){
+            return false;
+        }
+        foreach ($return['documents'] as $result) {
+            //Incrementing sentiment counter
+            $author = $results[$result['id'] - 1]['comment_author'];
+            $results[$result['id'] - 1]['comment_author'] = str_replace(array("'", "`", '"'), "", $author);
+            $results[$result['id'] - 1]['text'] = str_replace(array("\r\n", "\n", "\r", "'", "`", '"'), "", $results[$result['id'] - 1]['text']);
+            $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
+        }
+        return [$results, $sentiment_counter];
     }
 
     private function YTsentimentAnalysis($results)
@@ -258,12 +304,16 @@ class ApiController extends Controller
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
         $positiveLocation = array();
         $negativeLocation = array();
-        $neutralLocation = array();
+        $neutralLocation= array();
+
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
         $return = $this->azureSendRequest($results);
+        if ($return == false){
+            return false;
+        }
         foreach ($return['documents'] as $result) {
 
             //Incrementing sentiment counter
@@ -271,14 +321,17 @@ class ApiController extends Controller
 
             // Get lat and long by address
             $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
-            $results[$result['id'] - 1]['author_display_name'] = str_replace(
-                array("\r\n", "\n", "\r", "'", "`", '"')
-                , " ", $results[$result['id'] - 1]['author_display_name']);
-            if ($address != null || $address == "undefined") {
+            if ($address != null || $address != "undefined") {
                 $results[$result['id'] - 1]['location'] = $address;
             }
+            else {
+                // 2. Analyse from text using Geotext
+                $text = $results[$result['id'] - 1]['text'];
+                $geoResult = shell_exec(' python '.public_path().'/geotext/geo.py "'.$text.'"');
+                echo("Geo result location: " . $geoResult . "<br>");
+            }
             $this->getLonLat($address,
-                $result,
+                $result['score'],
                 $positiveLocation,
                 $negativeLocation,
                 $neutralLocation, $results);
@@ -287,36 +340,36 @@ class ApiController extends Controller
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
-    private function getLonLat($address, $result, &$positiveLocation, &$negativeLocation, &$neutralLocation)
+    private function getLonLat($address, $score, &$positiveLocation, &$negativeLocation, &$neutralLocation)
     {
         if ($address != null) {
             $prepAddr = str_replace(' ', '+', $address);
             $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
             $output = json_decode($geocode);
-            if ($output->results != null) {
-                $latitude = $output->results{0}->geometry->location->lat;
-                $longitude = $output->results{0}->geometry->location->lng;
-                $this->addLocation($latitude, $longitude,
-                    $result, $positiveLocation, $negativeLocation, $neutralLocation);
+            if ($output != null) {
+                if ($output->results != null){
+                    $latitude = $output->results{0}->geometry->location->lat;
+                    $longitude = $output->results{0}->geometry->location->lng;
+                    $this->addLocation(array("lat" => $latitude, "lng" => $longitude),
+                        $score, $positiveLocation, $negativeLocation, $neutralLocation);
+                }
             }
         }
     }
 
     private function addLocation(
-        $latitude,
-        $longitude,
-        $result,
+        $coord,
+        $score,
         &$positiveLocation,
         &$negativeLocation,
         &$neutralLocation
     ) {
-        $score = $result['score'];
         if ($score < 0.5) {
-            array_push($negativeLocation, array("lat" => $latitude, "lng" => $longitude));
+            array_push($negativeLocation, $coord);
         } elseif ($score > 0.5) {
-            array_push($positiveLocation, array("lat" => $latitude, "lng" => $longitude));
+            array_push($positiveLocation, $coord);
         } elseif ($score == 0.5) {
-            array_push($neutralLocation, array("lat" => $latitude, "lng" => $longitude));
+            array_push($neutralLocation, $coord);
         }
     }
 
@@ -328,7 +381,7 @@ class ApiController extends Controller
         } elseif ($score > 0.5) {
             $sentiment_counter['positive']++;
             $results[$result['id'] - 1]['sentiment'] = 'positive';
-        } else {
+        } elseif ($score == 0.5) {
             $sentiment_counter['neutral']++;
             $results[$result['id'] - 1]['sentiment'] = 'neutral';
         }
@@ -353,14 +406,20 @@ class ApiController extends Controller
 
         /*Creating a request*/
         $client = new Client(); //GuzzleHttp\Client
-        $res = $client->request('POST',
-            'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
-                'headers' => [
-                    'content-type' => 'application/json',
-                    'Ocp-Apim-Subscription-Key' => $key->key
-                ],
-                'body' => $body_message
-            ]);
+        $res = null;
+        try {
+            $res = $client->request('POST',
+                'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
+                    'headers' => [
+                        'content-type' => 'application/json',
+                        'Ocp-Apim-Subscription-Key' => $key->key
+                    ],
+                    'body' => $body_message
+                ]);
+        } catch (\Exception $e) {
+            // How can I get the response body?
+            return false;
+        }
 
         /*Response returned*/
         $json = "";

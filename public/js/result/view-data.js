@@ -7,7 +7,7 @@ $(document).ready(function() {
             if (data['sentiment'] == 'positive')
             {
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
+                    "<td>"+index+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['location']+"</div></td>"+
@@ -24,7 +24,7 @@ $(document).ready(function() {
             if (data['sentiment'] == 'neutral')
             {
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
+                    "<td>"+index+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['location']+"</div></td>"+
@@ -41,7 +41,7 @@ $(document).ready(function() {
             if (data['sentiment'] == 'negative')
             {
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
+                    "<td>"+index+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['location']+"</div></td>"+
@@ -60,7 +60,7 @@ $(document).ready(function() {
                 var location = data['location'];
                 if (location == undefined) { location = ""; }
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
+                    "<td>"+index+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['author_display_name']+"</div></td>"+
@@ -81,7 +81,7 @@ $(document).ready(function() {
                 var location = data['location'];
                 if (location == undefined) { location = ""; }
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
+                    "<td>"+index+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['author_display_name']+"</div></td>"+
@@ -102,7 +102,7 @@ $(document).ready(function() {
                 var location = data['location'];
                 if (location == undefined) { location = ""; }
                 table_body += "<tr>"+
-                    "<td>"+index+1+"</td>"+
+                    "<td>"+index+"</td>"+
                     "<td>"+data['created_at']+"</td>"+
                     "<td><div>"+data['text']+"</div></td>"+
                     "<td><div>"+data['author_display_name']+"</div></td>"+
@@ -113,7 +113,60 @@ $(document).ready(function() {
         });
         $('#youtubeData').html(yt_start_table + table_body + end_table);
     });
+//////////////////
+    $( "#facebook_pos_button" ).click(function() {
+        $('#facebokData').toggle();
+        var table_body = "";
+        facebook_data.forEach(function(data, index) {
+            if (data['sentiment'] == 'positive')
+            {
+                table_body += "<tr>"+
+                    "<td>"+index+"</td>"+
+                    "<td>"+data['created_at']+"</td>"+
+                    "<td><div>"+data['text']+"</div></td>"+
+                    "<td><div>"+data['comment_author']+"</div></td>"+
+                    "<td><div></div></td>"+
+                    "</tr>";
+            }
+        });
+        $('#facebookData').html(fb_start_table + table_body + end_table);
+    });
 
+    $( "#facebook_neu_button" ).click(function() {
+        $('#facebookData').toggle();
+        var table_body = "";
+        facebook_data.forEach(function(data, index) {
+            if (data['sentiment'] == 'neutral')
+            {
+                table_body += "<tr>"+
+                    "<td>"+index+"</td>"+
+                    "<td>"+data['created_at']+"</td>"+
+                    "<td><div>"+data['text']+"</div></td>"+
+                    "<td><div>"+data['comment_author']+"</div></td>"+
+                    "<td><div></div></td>"+
+                    "</tr>";
+            }
+        });
+        $('#facebookData').html(fb_start_table + table_body + end_table);
+    });
+
+    $( "#facebook_neg_button" ).click(function() {
+        $('#facebookData').toggle();
+        var table_body = "";
+        facebook_data.forEach(function(data, index) {
+            if (data['sentiment'] == 'negative')
+            {
+                table_body += "<tr>"+
+                    "<td>"+index+"</td>"+
+                    "<td>"+data['created_at']+"</td>"+
+                    "<td><div>"+data['text']+"</div></td>"+
+                    "<td><div>"+data['comment_author']+"</div></td>"+
+                    "<td><div></div></td>"+
+                    "</tr>";
+            }
+        });
+        $('#facebookData').html(fb_start_table + table_body + end_table);
+    });
 });
 
 var start_table = "<table class='table-striped table-responsive'> <thead> <tr>"+
@@ -129,6 +182,14 @@ var yt_start_table = "<table class='table-striped table-responsive'> <thead> <tr
     "<td><h4>Comment</h4></td>" +
     "<td><h4>Username</h4></td> " +
     "<td><h4>User url</h4></td> " +
+    "<td><h4>User Location</h4></td> " +
+    "</tr></thead><tbody>";
+
+var fb_start_table = "<table class='table-striped table-responsive'> <thead> <tr>"+
+    "<td></td>"+
+    "<td><h4>Time</h4></td> " +
+    "<td><h4>Comment</h4></td>" +
+    "<td><h4>Username</h4></td> " +
     "<td><h4>User Location</h4></td> " +
     "</tr></thead><tbody>";
 

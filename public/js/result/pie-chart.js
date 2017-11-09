@@ -1,15 +1,20 @@
 $(document).ready(function() {
     //Calculations
     var total_twitter = pos_twitter_sentiment + neg_twitter_sentiment + neu_twitter_sentiment,
-        total_youtube = pos_yt_sentiment + neg_yt_sentiment + neu_yt_sentiment;
-    var max = Math.max(total_twitter, total_youtube);
+        total_youtube = pos_yt_sentiment + neg_yt_sentiment + neu_yt_sentiment,
+        total_facebook = pos_fb_sentiment + neg_fb_sentiment + neu_fb_sentiment;
+    var max = Math.max(total_twitter, total_youtube, total_facebook);
     var new_pos_twitter_sentiment = 0,
         new_neg_twitter_sentiment = 0,
         new_neu_twitter_sentiment = 0,
 
         new_pos_yt_sentiment = 0,
         new_neg_yt_sentiment = 0,
-        new_neu_yt_sentiment = 0;
+        new_neu_yt_sentiment = 0,
+
+        new_pos_fb_sentiment = 0,
+        new_neg_fb_sentiment = 0,
+        new_neu_fb_sentiment = 0;
 
     if (total_twitter != 0){
         new_pos_twitter_sentiment = pos_twitter_sentiment*(max/total_twitter);
@@ -23,9 +28,15 @@ $(document).ready(function() {
         new_neu_yt_sentiment = neu_yt_sentiment*(max/total_youtube);
     }
 
-    var total_pos = new_pos_twitter_sentiment + new_pos_yt_sentiment,
-        total_neg = new_neg_twitter_sentiment + new_neg_yt_sentiment,
-        total_neu = new_neu_twitter_sentiment+ new_neu_yt_sentiment,
+    if (total_facebook != 0 ){
+        new_pos_fb_sentiment = pos_fb_sentiment*(max/total_facebook);
+        new_neg_fb_sentiment = neg_fb_sentiment*(max/total_facebook);
+        new_neu_fb_sentiment = neu_fb_sentiment*(max/total_facebook);
+    }
+
+    var total_pos = new_pos_twitter_sentiment + new_pos_yt_sentiment + new_pos_fb_sentiment,
+        total_neg = new_neg_twitter_sentiment + new_neg_yt_sentiment + new_neg_fb_sentiment,
+        total_neu = new_neu_twitter_sentiment+ new_neu_yt_sentiment + new_neu_fb_sentiment,
         total = total_pos + total_neg + total_neu;
 
     var make_percentage = 100/total;
@@ -38,6 +49,9 @@ $(document).ready(function() {
     new_pos_yt_sentiment = Math.round(new_pos_yt_sentiment*make_percentage* 100) / 100;
     new_neg_yt_sentiment = Math.round(new_neg_yt_sentiment*make_percentage* 100) / 100;
     new_neu_yt_sentiment = Math.round(new_neu_yt_sentiment*make_percentage* 100) / 100;
+    new_pos_fb_sentiment = Math.round(new_pos_fb_sentiment*make_percentage* 100) / 100;
+    new_neg_fb_sentiment = Math.round(new_neg_fb_sentiment*make_percentage* 100) / 100;
+    new_neu_fb_sentiment = Math.round(new_neu_fb_sentiment*make_percentage* 100) / 100;
     //calculations
 
     var colors = Highcharts.getOptions().colors,
@@ -48,7 +62,7 @@ $(document).ready(function() {
             drilldown: {
                 name: 'Positive',
                 categories: ['Youtube', 'Twitter', 'Facebook'],
-                data: [new_pos_yt_sentiment, new_pos_twitter_sentiment, 0],
+                data: [new_pos_yt_sentiment, new_pos_twitter_sentiment, new_pos_fb_sentiment],
                 color: colors[0]
             }
         }, {
@@ -57,7 +71,7 @@ $(document).ready(function() {
             drilldown: {
                 name: 'Negative',
                 categories: ['Youtube', 'Twitter', 'Facebook'],
-                data: [new_neg_yt_sentiment, new_neg_twitter_sentiment, 0],
+                data: [new_neg_yt_sentiment, new_neg_twitter_sentiment, new_neg_fb_sentiment],
                 color: colors[1]
             }
         }, {
@@ -66,7 +80,7 @@ $(document).ready(function() {
             drilldown: {
                 name: 'Neutral',
                 categories: ['Youtube', 'Twitter', 'Facebook'],
-                data: [new_neu_yt_sentiment, new_neu_twitter_sentiment, 0],
+                data: [new_neu_yt_sentiment, new_neu_twitter_sentiment, new_neu_fb_sentiment],
                 color: colors[2]
             }
         }],

@@ -4,6 +4,11 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
+                @if ($azure_errors)
+                    <div class="alert alert-danger">
+                        <strong>Warning!</strong> {{$azure_errors}}
+                    </div>
+                @endif
                 <div class="panel panel-default">
                     <div class="panel-heading">Update Azure API Keys</div>
                     <div class="panel-body">

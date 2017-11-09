@@ -5,6 +5,9 @@ console.log(neu_twitter_sentiment);
 console.log(pos_yt_sentiment);
 console.log(neg_yt_sentiment);
 console.log(neu_yt_sentiment);
+console.log(pos_fb_sentiment);
+console.log(neg_fb_sentiment);
+console.log(neu_fb_sentiment);
 $(document).ready(function() {
     var chart = new Highcharts.Chart({
         chart: {
@@ -45,15 +48,15 @@ $(document).ready(function() {
         series: [{
             name: 'Positive',
             color: '#0095BE',
-            data: [pos_twitter_sentiment, 0, pos_yt_sentiment]
+            data: [pos_twitter_sentiment, pos_fb_sentiment, pos_yt_sentiment]
         }, {
             name: 'Negative',
             color: '#E16361',
-            data: [neg_twitter_sentiment, 0, neg_yt_sentiment]
+            data: [neg_twitter_sentiment, neg_fb_sentiment, neg_yt_sentiment]
         }, {
             name: 'Neutral',
             color: '#7B8A8E',
-            data: [neu_twitter_sentiment, 0, neu_yt_sentiment]
+            data: [neu_twitter_sentiment, neu_fb_sentiment, neu_yt_sentiment]
         }]
     });
 });
