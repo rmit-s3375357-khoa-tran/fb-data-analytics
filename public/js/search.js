@@ -1,16 +1,5 @@
 $(document).ready(function()
 {
-    $('#reset-all').click(function()
-    {
-        $.ajax({
-            url: 'api/empty/results',
-            type: 'get',
-            success: function(){
-                location.reload();
-            }
-        });
-    });
-
     $('.start-searching').click(function()
     {
         $('.disable-when-searching').prop('disabled', true);

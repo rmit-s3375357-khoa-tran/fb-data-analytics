@@ -23,9 +23,9 @@ Route::get('/', [
     function () {
         return view('pages.home');
     }
-]);
+])->name('home');
 
-Route::get('api/empty/results', 'ApiController@emptyResultsDirectory');
+Route::get('api/empty/results', 'ApiController@emptyResultsDirectory')->name('reset');
 Route::get('api/analyse/{keyword}/{stopwords}', 'ApiController@analyse');
 
 /*

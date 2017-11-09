@@ -26,6 +26,12 @@ $(document).ready(function()
                     $('#youtube-error-message').text(res['message']);
                     $('#youtube-alert-failure').show().delay(30000).fadeOut();
                 }
+                else if(res['message'] === "NoVideoFound")
+                {
+                    $('#youtube-no-result').show();
+                    $('#search-component').hide();
+                    $('#search-results-youtube').show();
+                }
                 else
                 {
                     var results = res['data'];
