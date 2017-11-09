@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
     $( "#twitter_pos_button" ).click(function() {
-        $('#twitterData').toggle();
+        $('#twitterData').slideToggle(1000);
         var table_body = "";
         twitter_data.forEach(function(data, index) {
             if (data['sentiment'] == 'positive')
@@ -18,7 +18,7 @@ $(document).ready(function() {
     });
 
     $( "#twitter_neu_button" ).click(function() {
-        $('#twitterData').toggle();
+        $('#twitterData').slideToggle(1000);
         var table_body = "";
         twitter_data.forEach(function(data, index) {
             if (data['sentiment'] == 'neutral')
@@ -35,7 +35,7 @@ $(document).ready(function() {
     });
 
     $( "#twitter_neg_button" ).click(function() {
-        $('#twitterData').toggle();
+        $('#twitterData').slideToggle(1000);
         var table_body = "";
         twitter_data.forEach(function(data, index) {
             if (data['sentiment'] == 'negative')
@@ -52,7 +52,7 @@ $(document).ready(function() {
     });
 //////////////////
     $( "#youtube_pos_button" ).click(function() {
-        $('#youtubeData').toggle();
+        $('#youtubeData').slideToggle(1000);
         var table_body = "";
         youtube_data.forEach(function(data, index) {
             if (data['sentiment'] == 'positive')
@@ -73,7 +73,7 @@ $(document).ready(function() {
     });
 
     $( "#youtube_neu_button" ).click(function() {
-        $('#youtubeData').toggle();
+        $('#youtubeData').slideToggle(1000);
         var table_body = "";
         youtube_data.forEach(function(data, index) {
             if (data['sentiment'] == 'neutral')
@@ -94,7 +94,7 @@ $(document).ready(function() {
     });
 
     $( "#youtube_neg_button" ).click(function() {
-        $('#youtubeData').toggle();
+        $('#youtubeData').slideToggle(1000);
         var table_body = "";
         youtube_data.forEach(function(data, index) {
             if (data['sentiment'] == 'negative')
@@ -115,7 +115,7 @@ $(document).ready(function() {
     });
 //////////////////
     $( "#facebook_pos_button" ).click(function() {
-        $('#facebokData').toggle();
+        $('#facebokData').slideToggle(1000);
         var table_body = "";
         facebook_data.forEach(function(data, index) {
             if (data['sentiment'] == 'positive')
@@ -133,7 +133,7 @@ $(document).ready(function() {
     });
 
     $( "#facebook_neu_button" ).click(function() {
-        $('#facebookData').toggle();
+        $('#facebookData').slideToggle(1000);
         var table_body = "";
         facebook_data.forEach(function(data, index) {
             if (data['sentiment'] == 'neutral')
@@ -151,7 +151,7 @@ $(document).ready(function() {
     });
 
     $( "#facebook_neg_button" ).click(function() {
-        $('#facebookData').toggle();
+        $('#facebookData').slideToggle(1000);
         var table_body = "";
         facebook_data.forEach(function(data, index) {
             if (data['sentiment'] == 'negative')

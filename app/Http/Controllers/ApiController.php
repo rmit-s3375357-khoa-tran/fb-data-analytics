@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use ErrorException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redirect;
 
 class ApiController extends Controller
 {
@@ -23,6 +24,14 @@ class ApiController extends Controller
         Storage::delete($files);
     }
 
+    /**
+     * Analysing CSV Data, pre-processing and extracting sentiments and locations from the data
+     *
+     * @param string $keyword The text of that we evaluate.
+     *        string $stopwords The words we want omitted from our data
+     *
+     * @return view
+     */
     public function analyse($keyword, $stopwords)
     {
         // get type depending on if stopwords were set
@@ -38,10 +47,12 @@ class ApiController extends Controller
         list($YTresults, $YTsentiments, $YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
         list($FBresults, $FBsentiments) = $this->FBsentimentAnalysis($facebookData);
 
-        if ($results == false){
+        if ($results == false && $YTresults == false && $FBresults == false){
+            //return Redirect::to(url('/'));
             $azure_errors = "Azure keys are invalid. Please enter new API keys.";
             return view('pages.azure', compact('azure_errors'));
         }
+
         $posCoordinates = array_merge($TposCoordinates, $YTposCoordinates);
         $negCoordinates = array_merge($TnegCoordinates, $YTnegCoordinates);
         $neuCoordinates = array_merge($TneuCoordinates, $YTneuCoordinates);
@@ -165,10 +176,11 @@ class ApiController extends Controller
     }
 
     /**
-     * DatumboxAPI sentiment analysis
+     * Analysis on Twitter data using DatumBox sentiment API. Getting sentiment and location
      *
      * @param $results
-     * @return array
+     *
+     * @return array of sentiments, and location and modified $results data
      */
     private function analyseTweet($results)
     {
@@ -230,10 +242,11 @@ class ApiController extends Controller
     }
 
     /**
-     * AzureAPI sentiment analysis
+     * Analysis on Twitter data using Azure API. Getting sentiment and location
      *
      * @param $results
-     * @return array
+     *
+     * @return array|false returns and array of sentiments, and location and modified $results data or false on fail
      */
     private function sentimentAnalysis($results)
     {
@@ -248,7 +261,7 @@ class ApiController extends Controller
 
         $return = $this->azureSendRequest($results);
         if ($return == false){
-            return false;
+            return 400;
         }
 
         foreach ($return['documents'] as $result) {
@@ -278,6 +291,13 @@ class ApiController extends Controller
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
+    /**
+     * Analysis on Facebook data using Azure API. Getting sentiment and location
+     *
+     * @param $results
+     *
+     * @return array|false returns and array of sentiments, and location and modified $results data or false on fail
+     */
     private function FBsentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
@@ -287,18 +307,33 @@ class ApiController extends Controller
         //print_r($results);
         $return = $this->azureSendRequest($results);
         if ($return == false){
-            return false;
+            return 400;
         }
         foreach ($return['documents'] as $result) {
             //Incrementing sentiment counter
-            $author = $results[$result['id'] - 1]['comment_author'];
-            $results[$result['id'] - 1]['comment_author'] = str_replace(array("'", "`", '"'), "", $author);
-            $results[$result['id'] - 1]['text'] = str_replace(array("\r\n", "\n", "\r", "'", "`", '"'), "", $results[$result['id'] - 1]['text']);
+            $text = $results[$result['id'] - 1]['text'];
+            $results[$result['id'] - 1]['comment_author'] = str_replace(array("'", "`", '"'), "", $results[$result['id'] - 1]['comment_author']);
+            $results[$result['id'] - 1]['text'] = str_replace(array("\r\n", "\n", "\r", "'", "`", '"'), "", $text);
             $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
+
+            //Geo text matching patterns in text in ...
+//            preg_match_all("/in \w+/", $text, $new_text);
+//            foreach ($new_text[0] as $t) {
+//                print_r($t);
+//                $geoResult = shell_exec(' python '.public_path().'/geotext/geo.py "'.$t.'"');
+//                echo("FB Geo result location: " . $geoResult . "<br>");
+//            }
         }
         return [$results, $sentiment_counter];
     }
 
+    /**
+     * Analysis on Youtube data using Azure API. Getting sentiment and location
+     *
+     * @param $results
+     *
+     * @return array|false returns and array of sentiments, and location and modified $results data or false on fail
+     */
     private function YTsentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
@@ -312,7 +347,7 @@ class ApiController extends Controller
 
         $return = $this->azureSendRequest($results);
         if ($return == false){
-            return false;
+            return 400;
         }
         foreach ($return['documents'] as $result) {
 
@@ -321,14 +356,18 @@ class ApiController extends Controller
 
             // Get lat and long by address
             $address = $this->getGeo($results[$result['id'] - 1]['author_channel_id']);
-            if ($address != null || $address != "undefined") {
+            if ($address != null) {
+                echo "address exists";
                 $results[$result['id'] - 1]['location'] = $address;
             }
             else {
-                // 2. Analyse from text using Geotext
-                $text = $results[$result['id'] - 1]['text'];
-                $geoResult = shell_exec(' python '.public_path().'/geotext/geo.py "'.$text.'"');
-                echo("Geo result location: " . $geoResult . "<br>");
+                //Geo text matching patterns in text in ...
+//                $text = $results[$result['id'] - 1]['text'];
+//                preg_match_all("/in \w+/", $text, $new_text);
+//                foreach ($new_text[0] as $t) {
+//                    $geoResult = shell_exec(' python '.public_path().'/geotext/geo.py "'.$t.'"');
+//                    echo("YT Geo result location: " . $geoResult . "<br>");
+//                }
             }
             $this->getLonLat($address,
                 $result['score'],
@@ -340,11 +379,22 @@ class ApiController extends Controller
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
     }
 
+    /**
+     * converts string address to lon and lat value and adds it in their respective sentiment array
+     *
+     * @param $address, $score, &$positiveLocation, &$negativeLocation, &$neutralLocation
+     *
+     * @return none
+     */
     private function getLonLat($address, $score, &$positiveLocation, &$negativeLocation, &$neutralLocation)
     {
         if ($address != null) {
             $prepAddr = str_replace(' ', '+', $address);
-            $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
+            try {
+                $geocode = file_get_contents('https://maps.google.com/maps/api/geocode/json?address=' . $prepAddr . '&sensor=false');
+            } catch (\Exception $e) {
+                return;
+            }
             $output = json_decode($geocode);
             if ($output != null) {
                 if ($output->results != null){
@@ -357,6 +407,13 @@ class ApiController extends Controller
         }
     }
 
+    /**
+     * Adds location to their respective sentiment array
+     *
+     * @param  $coord ,$score, $positiveLocation, $negativeLocation, $neutralLocation)
+     *
+     * @return none
+     */
     private function addLocation(
         $coord,
         $score,
@@ -373,6 +430,14 @@ class ApiController extends Controller
         }
     }
 
+
+    /**
+     * Increment sentiment counter based on score and add to results data
+     *
+     * @param $score, &$sentiment_counter, &$result, &$results
+     *
+     * @return none
+     */
     private function incrementSentiment($score, &$sentiment_counter, &$result, &$results)
     {
         if ($score < 0.5) {
@@ -387,6 +452,13 @@ class ApiController extends Controller
         }
     }
 
+    /**
+     * Makes a http request to azure for sentiment analysis
+     *
+     * @param &$results
+     *
+     * @return Array|false It returns data on success and false on fail.
+     */
     private function azureSendRequest(&$results)
     {
         /* Converting messages into json body for request*/
@@ -433,6 +505,13 @@ class ApiController extends Controller
         return $return;
     }
 
+    /**
+     * Abstracting Youtube country details from users
+     *
+     * @param $authorChannelId
+     *
+     * @return string|null It returns country string on success and false on fail.
+     */
     private function getGeo($authorChannelId)
     {
         $endpoint = "https://www.googleapis.com/youtube/v3/channels?" .
