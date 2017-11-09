@@ -4,10 +4,9 @@ console.log(negative);
 console.log(neutral);
 
 initMap = function() {
-
     var map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 3,
-        center: positive[0]
+        zoom: 1,
+        center: neutral[0]
     });
 
     var opt = {
