@@ -31,10 +31,9 @@ class DatumboxAPI {
      *
      * @return string $jsonreply
      */
-    protected function CallWebService($api_method,$POSTparameters) {
-        $POSTparameters['api_key']= $this->keys[0];
+    protected function CallWebService($api_key, $api_method,$POSTparameters) {
+        $POSTparameters['api_key']= $api_key;
 
-//        $mh = curl_multi_init();
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'http://api.datumbox.com/'.self::version.'/'.$api_method.'.json');
@@ -85,9 +84,16 @@ class DatumboxAPI {
             'text'=>$text,
         );
 
-        $jsonreply=$this->CallWebService('TwitterSentimentAnalysis',$parameters);
+        $result = null;
+        foreach ($this->keys as $key){
+            $jsonreply=$this->CallWebService($key, 'TwitterSentimentAnalysis',$parameters);
+            $result=$this->ParseReply($jsonreply);
+            if ($result != false) {
+                break;
+            }
+        }
 
-        return $this->ParseReply($jsonreply);
+        return $result;
     }
 
 

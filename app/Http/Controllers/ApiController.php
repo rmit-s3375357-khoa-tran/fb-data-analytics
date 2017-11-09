@@ -180,19 +180,19 @@ class ApiController extends Controller
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
-        $messages = $DatumboxAPI->multiRequest(0, $results);
-        if ($messages == false) {
-            return $this->sentimentAnalysis($results);
-        }
+        //$messages = $DatumboxAPI->multiRequest(0, $results);
+//        if ($messages == false) {
+//            return $this->sentimentAnalysis($results);
+//        }
         foreach ($results as $index => $result) {
             $score = null;
-            //$message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
+            $message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
 
             //incrementing sentiment counter
-            $message = null;
-            if(isset($messages[$index])){
-                $message = $messages[$index];
-            }
+//            $message = null;
+//            if(isset($messages[$index])){
+//                $message = $messages[$index];
+//            }
             if ($message == "negative") {
                 $score = 0;
                 $sentiment_counter['negative']++;
