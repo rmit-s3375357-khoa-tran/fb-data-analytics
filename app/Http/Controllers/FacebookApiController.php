@@ -29,11 +29,11 @@ class FacebookApiController extends Controller
         $today = Carbon::today()->toDateString();
 
         // execute python script using process, get posts from page entered
-        $process = new Process('python fbScrapper/get_fb_posts_fb_page.py ' . $pageId . ' ' . $startingDate . ' ' . $today);
+        $process = new Process('python pyScripts/get_fb_posts_fb_page.py ' . $pageId . ' ' . $startingDate . ' ' . $today);
         $process->run();
 
         // execute python script using process, get comments from posts collected
-        $process = new Process('python fbScrapper/get_fb_comments_from_fb.py ' . $pageId . ' ' . $count . ' ' . $keyword);
+        $process = new Process('python pyScripts/get_fb_comments_from_fb.py ' . $pageId . ' ' . $count . ' ' . $keyword);
         $process->run();
 
         return json_encode([
