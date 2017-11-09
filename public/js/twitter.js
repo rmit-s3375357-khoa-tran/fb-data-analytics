@@ -36,7 +36,8 @@ $(document).ready(function()
 
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
-                    $('#analyse').attr('href', url).attr('data-ready', true);
+                    $('#analyse').attr('href', url).attr('data-ready', true)
+                        .removeClass('btn-default').addClass('btn-success');
                 }
                 else
                 {
@@ -87,7 +88,8 @@ $(document).ready(function()
 
                     stopWords = stopWords !== ""? stopWords : 'null';
                     var url = 'api/analyse/' + keyword + '/' + stopWords;
-                    $('#analyse').attr('href', url).attr('data-ready', true);
+                    $('#analyse').attr('href', url).attr('data-ready', true)
+                        .removeClass('btn-default').addClass('btn-success');
                 }
                 else
                 {
