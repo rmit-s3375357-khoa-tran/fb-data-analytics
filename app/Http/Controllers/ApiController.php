@@ -30,13 +30,18 @@ class ApiController extends Controller
 
         // get data for all resources
         $twitterData = $this->getDataFromCsv($keyword, $type, 'twitter');
-        $facebookData = $this->getDataFromCsv($keyword, '', 'facebook');
+        $facebookData = $this->getDataFromCsv($keyword, '_comments', 'facebook');
         $youtubeData = $this->getDataFromCsv($keyword, $type, 'youtube');
 
         // analyse data
-        list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->analyseTweet($twitterData);
+        list($results, $sentiments, $TnegCoordinates, $TposCoordinates, $TneuCoordinates) = $this->sentimentAnalysis($twitterData);
         list($YTresults, $YTsentiments, $YTnegCoordinates, $YTposCoordinates, $YTneuCoordinates) = $this->YTsentimentAnalysis($youtubeData);
         list($FBresults, $FBsentiments) = $this->FBsentimentAnalysis($facebookData);
+
+        if ($results == false){
+            $azure_errors = "Azure keys are invalid. Please enter new API keys.";
+            return view('pages.azure', compact('azure_errors'));
+        }
         $posCoordinates = array_merge($TposCoordinates, $YTposCoordinates);
         $negCoordinates = array_merge($TnegCoordinates, $YTnegCoordinates);
         $neuCoordinates = array_merge($TneuCoordinates, $YTneuCoordinates);
@@ -175,13 +180,19 @@ class ApiController extends Controller
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
-        $messages = $DatumboxAPI->multiRequest($results);
+        $messages = $DatumboxAPI->multiRequest(0, $results);
+        if ($messages == false) {
+            return $this->sentimentAnalysis($results);
+        }
         foreach ($results as $index => $result) {
             $score = null;
             //$message = $DatumboxAPI->TwitterSentimentAnalysis(str_replace('@', "", $result['text']));
 
             //incrementing sentiment counter
-            $message = $messages[$index];
+            $message = null;
+            if(isset($messages[$index])){
+                $message = $messages[$index];
+            }
             if ($message == "negative") {
                 $score = 0;
                 $sentiment_counter['negative']++;
@@ -227,13 +238,18 @@ class ApiController extends Controller
     private function sentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $positiveLocation = $negativeLocation = $neutralLocation= array();
+        $positiveLocation = array();
+        $negativeLocation = array();
+        $neutralLocation= array();
 
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
         $return = $this->azureSendRequest($results);
+        if ($return == false){
+            return false;
+        }
 
         foreach ($return['documents'] as $result) {
             $score = $result['score'];
@@ -256,7 +272,7 @@ class ApiController extends Controller
                     $score,
                     $positiveLocation,
                     $negativeLocation,
-                    $neutralLocation, $results);
+                    $neutralLocation);
             }
         }
         return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
@@ -268,10 +284,16 @@ class ApiController extends Controller
         if ($results == null) {
             return [$results, $sentiment_counter];
         }
-        print_r($results);
+        //print_r($results);
         $return = $this->azureSendRequest($results);
+        if ($return == false){
+            return false;
+        }
         foreach ($return['documents'] as $result) {
             //Incrementing sentiment counter
+            $author = $results[$result['id'] - 1]['comment_author'];
+            $results[$result['id'] - 1]['comment_author'] = str_replace(array("'", "`", '"'), "", $author);
+            $results[$result['id'] - 1]['text'] = str_replace(array("\r\n", "\n", "\r", "'", "`", '"'), "", $results[$result['id'] - 1]['text']);
             $this->incrementSentiment($result['score'], $sentiment_counter, $result, $results);
         }
         return [$results, $sentiment_counter];
@@ -280,13 +302,18 @@ class ApiController extends Controller
     private function YTsentimentAnalysis($results)
     {
         $sentiment_counter = array("positive" => 0, "negative" => 0, "neutral" => 0);
-        $positiveLocation = $negativeLocation = $neutralLocation= array();
+        $positiveLocation = array();
+        $negativeLocation = array();
+        $neutralLocation= array();
 
         if ($results == null) {
             return [$results, $sentiment_counter, $negativeLocation, $positiveLocation, $neutralLocation];
         }
 
         $return = $this->azureSendRequest($results);
+        if ($return == false){
+            return false;
+        }
         foreach ($return['documents'] as $result) {
 
             //Incrementing sentiment counter
@@ -354,7 +381,7 @@ class ApiController extends Controller
         } elseif ($score > 0.5) {
             $sentiment_counter['positive']++;
             $results[$result['id'] - 1]['sentiment'] = 'positive';
-        } else {
+        } elseif ($score == 0.5) {
             $sentiment_counter['neutral']++;
             $results[$result['id'] - 1]['sentiment'] = 'neutral';
         }
@@ -379,14 +406,20 @@ class ApiController extends Controller
 
         /*Creating a request*/
         $client = new Client(); //GuzzleHttp\Client
-        $res = $client->request('POST',
-            'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
-                'headers' => [
-                    'content-type' => 'application/json',
-                    'Ocp-Apim-Subscription-Key' => $key->key
-                ],
-                'body' => $body_message
-            ]);
+        $res = null;
+        try {
+            $res = $client->request('POST',
+                'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment', [
+                    'headers' => [
+                        'content-type' => 'application/json',
+                        'Ocp-Apim-Subscription-Key' => $key->key
+                    ],
+                    'body' => $body_message
+                ]);
+        } catch (\Exception $e) {
+            // How can I get the response body?
+            return false;
+        }
 
         /*Response returned*/
         $json = "";

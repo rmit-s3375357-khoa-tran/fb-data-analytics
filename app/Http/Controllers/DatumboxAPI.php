@@ -10,8 +10,7 @@ namespace App\Http\Controllers;
 
 class DatumboxAPI {
     const version='1.0';
-
-    protected $api_key;
+    private $keys;
 
     /**
      * Constructor
@@ -19,8 +18,9 @@ class DatumboxAPI {
      * @param string $api_key
      * @return DatumboxAPI
      */
-    public function __construct($api_key) {
-        $this->api_key = $api_key;
+    public function __construct() {
+        $this->keys = array(config('setting.datum_box.key'),  config('setting.datum_box.key2'),
+            config('setting.datum_box.key3'), config('setting.datum_box.key4'));
     }
 
     /**
@@ -32,7 +32,7 @@ class DatumboxAPI {
      * @return string $jsonreply
      */
     protected function CallWebService($api_method,$POSTparameters) {
-        $POSTparameters['api_key']= $this->api_key;
+        $POSTparameters['api_key']= $this->keys[0];
 
 //        $mh = curl_multi_init();
 
@@ -66,7 +66,8 @@ class DatumboxAPI {
         }
 
         if(isset($jsonreply['error']['ErrorCode']) && isset($jsonreply['error']['ErrorMessage'])) {
-            echo $jsonreply['error']['ErrorMessage'].' (ErrorCode: '.$jsonreply['error']['ErrorCode'].')';
+            //echo $jsonreply['error']['ErrorMessage'].' (ErrorCode: '.$jsonreply['error']['ErrorCode'].')';
+            return false;
         }
 
         return false;
@@ -97,7 +98,7 @@ class DatumboxAPI {
      *
      * @return string|false It returns "positive", "negative" or "neutral" on success and false on fail.
      */
-    function multiRequest($data, $options = array()) {
+    public function multiRequest($key, $data) {
         // array of curl handles
         $curly = array();
         // data to be returned
@@ -109,28 +110,25 @@ class DatumboxAPI {
         // loop through $data and create curl handles
         // then add them to the multi-handle
         foreach ($data as $id => $d) {
-
             $curly[$id] = curl_init();
 
             curl_setopt($curly[$id], CURLOPT_URL,            'http://api.datumbox.com/'.self::version.'/TwitterSentimentAnalysis.json');
             curl_setopt($curly[$id], CURLOPT_HEADER,         0);
             curl_setopt($curly[$id], CURLOPT_RETURNTRANSFER, 1);
 
-            // post?
+            // post
+            if ($key > count($this->keys)){
+                echo "<br><br><br><h1>Datumbox keys are unavailable for twitter sentiment analysis<br>
+                        Azure sentiment is used instead.</h1>";
+                return false;
+            }
             $POSTparameters['text'] = str_replace('@', "", $d['text']);
-            $POSTparameters['api_key']=$this->api_key;
-            if (is_array($d)) {
-                if (!empty($d['text'])) {
-                    curl_setopt($curly[$id], CURLOPT_POST,       1);
-                    curl_setopt($curly[$id], CURLOPT_POSTFIELDS, $POSTparameters);
-                }
-            }
+            $POSTparameters['api_key'] = $this->keys[$key];
 
-            // extra options?
-            if (!empty($options)) {
-                curl_setopt_array($curly[$id], $options);
+            if (!empty($d['text'])) {
+                curl_setopt($curly[$id], CURLOPT_POST,       1);
+                curl_setopt($curly[$id], CURLOPT_POSTFIELDS, $POSTparameters);
             }
-
             curl_multi_add_handle($mh, $curly[$id]);
         }
 
@@ -145,6 +143,12 @@ class DatumboxAPI {
         foreach($curly as $id => $c) {
             $result[$id] = $this->ParseReply(curl_multi_getcontent($c));
             print_r(curl_multi_getcontent($c));
+            if ($result[$id] == false) {
+                $new_data = array_slice($data, $id, true);
+                $result = array_merge($result, $this->multiRequest($key++, $new_data));
+                curl_multi_remove_handle($mh, $c);
+                break;
+            }
             curl_multi_remove_handle($mh, $c);
         }
 

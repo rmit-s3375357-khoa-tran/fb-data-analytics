@@ -18,7 +18,6 @@
                 twitter_data = JSON.parse('{!! json_encode($results) !!}'),
                 youtube_data = JSON.parse('{!! json_encode($YTresults)!!}'),
                 facebook_data = JSON.parse('{!! json_encode($FBresults)!!}');
-        console.log(twitter_data);
     </script>
 
 
