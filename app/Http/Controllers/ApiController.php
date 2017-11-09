@@ -30,7 +30,7 @@ class ApiController extends Controller
 
         // get data for all resources
         $twitterData = $this->getDataFromCsv($keyword, $type, 'twitter');
-        $facebookData = $this->getDataFromCsv($keyword, '_comments', 'facebook');
+        $facebookData = $this->getDataFromCsv($keyword, '', 'facebook');
         $youtubeData = $this->getDataFromCsv($keyword, $type, 'youtube');
 
         // analyse data
